@@ -1,12 +1,18 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { readSettings, writeSettings } from '../persistence/db';
-import { defaultSettings, SettingsSchema, type Settings } from '../persistence/schemas';
+import { readSettings, resetDatabase, writeSettings } from '../persistence/db';
+import {
+  defaultSettings,
+  SettingsSchema,
+  type Profile,
+  type Settings,
+} from '../persistence/schemas';
 
 export const useSettingsStore = defineStore('settings', () => {
   const settings = ref(defaultSettings());
   const hydrated = ref(false);
   const locale = computed(() => settings.value.locale);
+  let persistenceQueue = Promise.resolve();
 
   async function hydrate(): Promise<void> {
     if (hydrated.value) return;
@@ -14,20 +20,42 @@ export const useSettingsStore = defineStore('settings', () => {
     hydrated.value = true;
   }
 
-  async function patch(values: Partial<Omit<Settings, 'id' | 'updatedAt'>>): Promise<void> {
-    settings.value = SettingsSchema.parse({
-      ...settings.value,
-      ...values,
-      updatedAt: new Date().toISOString(),
+  function enqueuePersistence<T>(operation: () => Promise<T>): Promise<T> {
+    const pending = persistenceQueue.then(operation);
+    persistenceQueue = pending.then(
+      () => undefined,
+      () => undefined,
+    );
+    return pending;
+  }
+
+  function patch(values: Partial<Omit<Settings, 'id' | 'updatedAt'>>): Promise<void> {
+    return enqueuePersistence(async () => {
+      const previous = settings.value;
+      const next = SettingsSchema.parse({
+        ...previous,
+        ...values,
+        updatedAt: new Date().toISOString(),
+      });
+      try {
+        await writeSettings(next);
+        settings.value = next;
+      } catch (error) {
+        // Replacing the object also restores controlled form elements changed by the browser.
+        settings.value = SettingsSchema.parse(previous);
+        throw error;
+      }
     });
-    await writeSettings(settings.value);
   }
 
-  async function reset(): Promise<void> {
-    settings.value = defaultSettings();
-    hydrated.value = true;
-    await writeSettings(settings.value);
+  function resetAllPersistence(): Promise<{ profile: Profile; settings: Settings }> {
+    return enqueuePersistence(async () => {
+      const reset = await resetDatabase();
+      settings.value = reset.settings;
+      hydrated.value = true;
+      return reset;
+    });
   }
 
-  return { settings, hydrated, locale, hydrate, patch, reset };
+  return { settings, hydrated, locale, hydrate, patch, resetAllPersistence };
 });

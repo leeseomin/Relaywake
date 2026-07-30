@@ -141,10 +141,20 @@ async function handleRunEnded(summary: RunSummary): Promise<void> {
 async function resetProfile(): Promise<void> {
   try {
     await profileStore.reset();
-    await settingsStore.reset();
     showToast(t(locale.value, 'profileReset'));
   } catch (error) {
     console.error('Profile reset failed.', error);
+    showToast(t(locale.value, 'saveFailed'));
+  }
+}
+
+async function patchSettings(
+  values: Parameters<typeof settingsStore.patch>[0],
+): Promise<void> {
+  try {
+    await settingsStore.patch(values);
+  } catch (error) {
+    console.error('Settings could not be saved.', error);
     showToast(t(locale.value, 'saveFailed'));
   }
 }
@@ -177,7 +187,7 @@ function showToast(message: string): void {
     <SettingsPanel
       v-else-if="session.screen === 'settings'"
       :settings="settingsStore.settings"
-      @patch="settingsStore.patch"
+      @patch="patchSettings"
       @reset="resetProfile"
       @back="session.toMenu"
     />

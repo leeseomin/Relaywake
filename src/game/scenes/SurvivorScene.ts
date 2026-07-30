@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { gameEvents } from '../../app/gameEvents';
-import { iconUrl } from '../assets';
+import { assetDisplayScale, iconUrl } from '../assets';
 import {
   FINAL_BOSS_COIN_REWARD,
   resolveDamage,
@@ -974,7 +974,7 @@ export class SurvivorScene extends Phaser.Scene {
     let textureKey = 'pickup-gems';
     let scale = 2.1;
     if (kind === 'coin') { textureKey = value >= 10 ? 'pickup-coin-10' : 'pickup-coin'; scale = 1.7; }
-    if (kind === 'health') { textureKey = 'pickup-potion'; scale = 0.11; }
+    if (kind === 'health') { textureKey = 'pickup-potion'; scale = assetDisplayScale('pickup-potion'); }
     if (kind === 'magnet') { textureKey = 'pickup-magnet'; scale = 1.7; }
     if (kind === 'bomb') { textureKey = 'weapon-bomb'; scale = 1.7; }
     if (kind === 'chest') { textureKey = 'pickup-coin-10'; scale = 2.3; }

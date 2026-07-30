@@ -1,6 +1,7 @@
 import { expect, test, type Locator } from '@playwright/test';
 import {
   openIsolatedApp,
+  readStoredGameData,
   startRun,
   waitForStoredRun,
   type StoredRun,
@@ -98,6 +99,60 @@ test('kills the final boss, wins, and persists its reward and profile totals', a
   });
   expect(stored.profile?.bestTimeSeconds).toBe(run.elapsedSeconds);
   await expectResultStats(dialog, run);
+
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.locator('.coin-balance')).toContainText(run.coins.toLocaleString());
+  expect(await waitForStoredRun(page)).toEqual(stored);
+});
+
+test('rolls back a failed settings change and shows a storage toast', async ({ page }) => {
+  await page.getByRole('button', { name: /설정|Settings/ }).click();
+  const soundToggle = page.getByRole('checkbox').first();
+  await expect(soundToggle).toBeChecked();
+
+  await page.evaluate(() => {
+    const originalPut = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function put(
+      value: unknown,
+      key?: IDBValidKey,
+    ): IDBRequest<IDBValidKey> {
+      if (this.name === 'settings') {
+        throw new DOMException('Simulated settings failure.', 'QuotaExceededError');
+      }
+      return key === undefined
+        ? originalPut.call(this, value)
+        : originalPut.call(this, value, key);
+    };
+  });
+
+  await soundToggle.click();
+
+  await expect(soundToggle).toBeChecked();
+  await expect(page.getByRole('status')).toHaveText(
+    /저장하지 못했습니다|Could not save/,
+  );
+
+  await page.reload();
+  await page.getByRole('button', { name: /설정|Settings/ }).click();
+  await expect(page.getByRole('checkbox').first()).toBeChecked();
+});
+
+test('persists successful settings and restores them after reload', async ({ page }) => {
+  await page.getByRole('button', { name: /설정|Settings/ }).click();
+  const screenShakeToggle = page.getByRole('checkbox').nth(1);
+  await expect(screenShakeToggle).toBeChecked();
+
+  await screenShakeToggle.click();
+
+  await expect(screenShakeToggle).not.toBeChecked();
+  await expect.poll(async () => (await readStoredGameData(page)).settings?.screenShake)
+    .toBe(false);
+
+  await page.reload();
+  await page.getByRole('button', { name: /설정|Settings/ }).click();
+  await expect(page.getByRole('checkbox').nth(1)).not.toBeChecked();
+  expect((await readStoredGameData(page)).settings?.screenShake).toBe(false);
 });
 
 test('mobile touch input moves and resets the stick, then pauses the run', async ({ page }, testInfo) => {

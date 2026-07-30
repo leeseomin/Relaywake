@@ -4,7 +4,7 @@
 
 - Node.js: `^20.19.0 || >=22.12.0`
 - npm: `10.9.2`
-- GitHub Actions reference environment: Node.js `22.14.0`, npm `10.9.2`, Ubuntu
+- Recommended CI reference environment: Node.js `22.14.0`, npm `10.9.2`, Ubuntu
 - Dependency source of truth: the tracked lockfile, installed with `npm ci`
 
 ## Release gate
@@ -41,31 +41,31 @@ npx playwright install --with-deps chromium
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs for pull requests and pushes to `main`. It:
-
-- pins the reference Node.js and npm versions;
-- restores npm's download cache and installs dependencies with `npm ci`;
-- caches Chromium by operating system and `package-lock.json` hash;
-- installs Chromium plus required runner libraries; and
-- invokes only `npm run check` for the ordered release gate.
-
-Any failed typecheck, unit test, production build, preview startup, or browser
-test fails the job and blocks the gate.
+The ordered local gate remains available, but `.github/workflows/ci.yml` is not
+present in the current `main` branch. It was added in commit `a700802` and
+removed by the later commit `b3fefb3`. Until an equivalent remote workflow is
+restored, pull requests and pushes do not automatically run this gate.
 
 ## Current local verification
 
 Verified on 2026-07-30:
 
-- `npm ci`: passed; 118 packages installed, 0 vulnerabilities
+- `npm ci`: passed; 119 packages installed, 0 vulnerabilities
 - `npm run typecheck`: passed
-- `npm run test`: passed; 14 files and 29 tests
+- `npm run test`: passed; 16 files and 48 tests
 - `npm run build:bundle`: passed; 149 modules transformed
-- production JavaScript: 1,698.09 kB, 462.79 kB gzip
-- `npm run test:e2e:run`: passed; 5 tests passed and the desktop copy of the
+- production JavaScript: 1,704.23 kB, 464.09 kB gzip
+- `npm run test:e2e:run`: passed; 9 tests passed and the desktop copy of the
   mobile-only touch test was intentionally skipped
 - `npm run check`: passed from typecheck through production-preview E2E
+- persistence coverage: real Dexie transaction rollback, commit-before-Pinia,
+  duplicate/concurrent run handling, queued settings writes, and atomic reset
+- asset coverage: 40-file manifest parity, magic bytes, extension, dimensions,
+  frame geometry, preload use, provenance, and replacement-asset visual guards
+- `dirt-red.png`: 2,948,342 to 243,891 encoded bytes; 16 MiB to 1 MiB decoded
+  RGBA memory
 
 The local shell used Node.js `25.3.0` and npm `11.13.0`, so `npm ci` emitted the
 expected engine warning for the repository's pinned npm `10.9.2`. The
-authoritative CI job installs and runs the supported reference toolchain,
-Node.js `22.14.0` with npm `10.9.2`.
+recommended remote reference remains Node.js `22.14.0` with npm `10.9.2`, but
+the current branch does not contain a workflow that enforces it.

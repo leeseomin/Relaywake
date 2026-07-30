@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { assetPaths } from '../game/assets';
+import { assetPath } from '../game/assets';
 import { characters, type CharacterId } from '../game/data/characters';
 import { t, type Locale } from '../game/data/localization';
 
@@ -12,11 +12,12 @@ const emit = defineEmits<{
 const selected = ref<CharacterId>('blue');
 const selectedCharacter = computed(() => characters.find((character) => character.id === selected.value) ?? characters[0]);
 const characterSprites: Record<CharacterId, string> = {
-  blue: assetPaths.characterBlue,
-  purple: assetPaths.characterPurple,
-  white: assetPaths.characterWhite,
-  gray: assetPaths.characterGray,
+  blue: assetPath('character-blue'),
+  purple: assetPath('character-purple'),
+  white: assetPath('character-white'),
+  gray: assetPath('character-gray'),
 };
+const menuNoiseStyle = { backgroundImage: `url(${assetPath('menu-noise')})` };
 
 function statWidth(value: number, min: number, max: number): string {
   return `${Math.round(((value - min) / (max - min)) * 60 + 32)}%`;
@@ -25,7 +26,7 @@ function statWidth(value: number, min: number, max: number): string {
 
 <template>
   <section class="menu-screen">
-    <div class="menu-noise" aria-hidden="true"></div>
+    <div class="menu-noise" :style="menuNoiseStyle" aria-hidden="true"></div>
     <header class="menu-topbar">
       <div class="brand-lockup">
         <span class="brand-index">C2 / WEB REBUILD</span>

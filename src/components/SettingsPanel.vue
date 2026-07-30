@@ -33,7 +33,7 @@ function confirmReset(): void {
         <input
           type="checkbox"
           :checked="props.settings.soundEnabled"
-          @change="emit('patch', { soundEnabled: ($event.target as HTMLInputElement).checked })"
+          @click.prevent="emit('patch', { soundEnabled: !props.settings.soundEnabled })"
         />
       </label>
       <label class="setting-row">
@@ -41,7 +41,7 @@ function confirmReset(): void {
         <input
           type="checkbox"
           :checked="props.settings.screenShake"
-          @change="emit('patch', { screenShake: ($event.target as HTMLInputElement).checked })"
+          @click.prevent="emit('patch', { screenShake: !props.settings.screenShake })"
         />
       </label>
       <label class="setting-row">
@@ -49,7 +49,7 @@ function confirmReset(): void {
         <input
           type="checkbox"
           :checked="props.settings.damageNumbers"
-          @change="emit('patch', { damageNumbers: ($event.target as HTMLInputElement).checked })"
+          @click.prevent="emit('patch', { damageNumbers: !props.settings.damageNumbers })"
         />
       </label>
       <div class="setting-row">

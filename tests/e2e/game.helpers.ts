@@ -26,9 +26,19 @@ export interface StoredProfile {
   updatedAt: string;
 }
 
+export interface StoredSettings {
+  id: 'main';
+  locale: 'ko' | 'en';
+  soundEnabled: boolean;
+  screenShake: boolean;
+  damageNumbers: boolean;
+  updatedAt: string;
+}
+
 export interface StoredGameData {
   runs: StoredRun[];
   profile: StoredProfile | null;
+  settings: StoredSettings | null;
 }
 
 export async function openIsolatedApp(page: Page): Promise<void> {
@@ -81,21 +91,28 @@ export async function readStoredGameData(page: Page): Promise<StoredGameData> {
 
     const database = await openDatabase();
     try {
-      if (!database.objectStoreNames.contains('runs') || !database.objectStoreNames.contains('profiles')) {
-        return { runs: [], profile: null };
+      if (
+        !database.objectStoreNames.contains('runs')
+        || !database.objectStoreNames.contains('profiles')
+        || !database.objectStoreNames.contains('settings')
+      ) {
+        return { runs: [], profile: null, settings: null };
       }
 
-      const transaction = database.transaction(['runs', 'profiles'], 'readonly');
+      const transaction = database.transaction(['runs', 'profiles', 'settings'], 'readonly');
       const runsRequest = transaction.objectStore('runs').getAll();
       const profileRequest = transaction.objectStore('profiles').get('main');
-      const [runs, profile] = await Promise.all([
+      const settingsRequest = transaction.objectStore('settings').get('main');
+      const [runs, profile, settings] = await Promise.all([
         requestResult(runsRequest),
         requestResult(profileRequest),
+        requestResult(settingsRequest),
       ]);
 
       return {
         runs: runs as StoredRun[],
         profile: (profile as StoredProfile | undefined) ?? null,
+        settings: (settings as StoredSettings | undefined) ?? null,
       };
     } finally {
       database.close();

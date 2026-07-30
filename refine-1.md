@@ -24,7 +24,7 @@
 2. 검토 당시 `npm run check`가 typecheck 단계에서 실패했으므로 빌드·CI 게이트 복구를 최우선으로 정했고, 현재 P0에서 해결했다.
 3. 문서 13절에서 확인한 게임 동작 결함이 15절 우선순위에서 누락되어 있다.
 4. `SurvivorScene` 분리는 필요하지만, 현재 동작을 고정하는 회귀 테스트보다 먼저 진행하면 위험하다.
-5. 에셋 수정·최적화·manifest·라이선스 추적은 하나의 에셋 작업군으로 묶는 편이 효율적이다.
+5. 에셋 수정·최적화·manifest·라이선스 추적은 하나의 에셋 작업군으로 묶어 P1에서 반영했다.
 6. 메타 진행과 고정 timestep은 각각 제품 방향과 시뮬레이션 계약을 먼저 정해야 한다.
 
 권장 흐름은 다음과 같다.
@@ -46,7 +46,7 @@
 | --- | --- | --- |
 | 빌드 게이트 복구 | `SurvivorScene.update()`의 strict override 오류 수정 | 완료 |
 | 단일 릴리스 게이트 | typecheck → unit → production build → preview E2E 순서의 `npm run check` 구성 | 완료 |
-| CI | 고정 Node/npm, `npm ci`, Playwright Chromium, 전체 게이트를 실행하는 GitHub Actions 추가 | 완료 |
+| CI | `a700802`에서 GitHub Actions를 추가했으나 후속 `b3fefb3`에서 workflow가 삭제됨 | 현재 workflow 없음 |
 | production E2E | Vite dev server 대신 `dist`를 제공하는 `vite preview` 대상으로 전환 | 완료 |
 | 게임 동작 결함 | 공격 방향, 오버킬 통계, 공간 해시 분리 순서, 최종 보스 보상, 완전한 프레젠테이션 정지 처리 | 완료 |
 | 브라우저 회귀 | 실제 피해 패배, 최종 보스 처치 승리, 결과 UI, IndexedDB run/profile 저장 검증 | 완료 |
@@ -56,10 +56,23 @@
 
 - `npm ci`: 통과
 - typecheck: 통과
-- Vitest: 14파일, 29개 테스트 통과
+- Vitest: 16파일, 48개 테스트 통과
 - production bundle: 통과
-- Playwright: 5개 통과, 데스크톱 프로젝트의 모바일 전용 테스트 1개 의도적 제외
+- Playwright: 9개 통과, 데스크톱 프로젝트의 모바일 전용 테스트 1개 의도적 제외
 - `npm run check`: 통과
+
+### P1 6.3·6.4 반영 결과 — 2026-07-30
+
+| P1 항목 | 반영 내용 | 상태 |
+| --- | --- | --- |
+| run/profile 원자성 | 기존 profile 조회, 중복 run 방지, run 추가와 profile 집계를 하나의 Dexie read-write transaction으로 결합 | 완료 |
+| 메모리·DB 일관성 | transaction commit 반환 뒤에만 Pinia를 갱신하고 동시 run 종료·설정 저장·전체 초기화를 queue로 직렬화 | 완료 |
+| 설정 오류 UX | 저장 성공 전 상태를 공개하지 않으며 실패 시 체크박스·Pinia를 이전 값으로 유지하고 오류 토스트 표시 | 완료 |
+| 실제 브라우저 저장 검증 | run/profile/settings를 실제 IndexedDB에서 읽고 성공·실패 뒤 새로고침 상태까지 확인 | 완료 |
+| 에셋 교체 | 고대비 단일 `play` PNG와 단일 회복 물약 PNG로 교체 | 완료 |
+| 배경 최적화 | `dirt-red.png`를 2048×2048에서 512×512로 축소하고 2,948,342B에서 243,891B로 압축 | 완료 |
+| manifest 통합 | 배포 이미지 40개의 포맷·치수·프레임·소비자·출처·commit·저작자·라이선스를 중앙 관리 | 완료 |
+| preload·무결성 | Phaser 실제 소비 에셋만 preload하고 매직 바이트·확장자·크기·프레임·사용 여부·시각 품질을 같은 manifest로 검사 | 완료 |
 
 ---
 
@@ -68,17 +81,18 @@
 ### 빌드와 테스트
 
 - `package-lock.json`은 lockfile v3이며 현재 Git에 추적되어 있다.
-- `npm test`는 단위 테스트 14파일, 29개 테스트를 모두 통과한다.
+- `npm test`는 단위 테스트 16파일, 48개 테스트를 모두 통과한다.
 - `src/game/scenes/SurvivorScene.ts`의 `update()`에 `override`를 적용해 기존 `TS4114`를 해소했다.
 - `tsconfig.app.json`은 `noImplicitOverride: true`를 사용한다.
 - typecheck와 production build가 모두 통과한다.
-- 직접 Vite 번들링한 결과 초기 JavaScript가 단일 파일 약 1,698.09KB, gzip 약 462.79KB였다.
-- Playwright Chromium을 설치하고 production preview 기반 E2E를 실행해 5개가 통과했으며, 데스크톱 프로젝트의 모바일 전용 테스트 1개만 의도적으로 제외했다.
+- 직접 Vite 번들링한 결과 초기 JavaScript가 단일 파일 약 1,704.23KB, gzip 약 464.09KB였다.
+- Playwright Chromium을 설치하고 production preview 기반 E2E를 실행해 9개가 통과했으며, 데스크톱 프로젝트의 모바일 전용 테스트 1개만 의도적으로 제외했다.
 - 전체 `npm run check`가 통과한다.
 
 ### 검증 파이프라인의 남은 공백
 
 - `npm run check`와 Playwright production preview 검증은 구성됐지만, 실제 10분 전체 런의 soak/performance 검증은 아직 없다.
+- `a700802`에서 추가했던 `.github/workflows/ci.yml`은 후속 `b3fefb3`에서 삭제되어 현재 원격 CI 자동 실행은 없다. 로컬 단일 게이트는 유지된다.
 - 승리와 패배는 실제 게임 내부 경로를 통과하지만 E2E 전용 단축 브리지를 사용하므로 10분 동안의 자연 발생 이벤트 전체를 대신하지는 않는다.
 - 기본 모바일 pointer 이동·해제·일시정지는 검증하지만 화면 회전과 장시간 백그라운드 복귀는 아직 자동화되지 않았다.
 - Vitest coverage 기본 범위가 `src/game/core/**`와 `src/game/systems/**`로 제한되어 `SurvivorScene`의 핵심 전투 로직을 포함하지 않는다.
@@ -189,41 +203,60 @@
 
 #### 6.3 저장 원자성과 오류 처리
 
+**반영 상태: 완료 — 2026-07-30**
+
 작업:
 
-- 런 기록과 프로필 갱신을 하나의 Dexie transaction으로 결합
-- DB commit 성공 후에만 Pinia 프로필 갱신
-- transaction 실패 시 run/profile이 함께 rollback되는 테스트 추가
-- 설정 저장 실패 시 메모리 상태 rollback 또는 명시적 재시도
-- 설정 저장 오류를 사용자 토스트와 연결
-- E2E에서 실제 IndexedDB의 run/profile 값을 확인
+- [x] 런 기록과 프로필 갱신을 하나의 Dexie transaction으로 결합
+- [x] DB commit 성공 후에만 Pinia 프로필 갱신
+- [x] transaction 실패 시 run/profile이 함께 rollback되는 테스트 추가
+- [x] 설정 저장 실패 시 메모리 상태 유지와 직렬화된 후속 재시도 경로 확보
+- [x] 설정 저장 오류를 사용자 토스트와 연결
+- [x] E2E에서 실제 IndexedDB의 run/profile/settings 값을 확인
 
 완료 기준:
 
-- 저장 도중 어느 write가 실패해도 부분 저장이 남지 않는다.
-- 메모리 상태와 새로고침 후 저장 상태가 일치한다.
+- [x] 저장 도중 어느 write가 실패해도 부분 저장이 남지 않는다.
+- [x] 메모리 상태와 새로고침 후 저장 상태가 일치한다.
+
+실제 Dexie 생성·갱신·전체 초기화 실패를 `fake-indexeddb`에서 주입해
+transaction rollback을 검증했다. 동일 run ID 재전달과 동시에 끝난 두
+run도 중복 집계나 유실 없이 처리한다. 다른 브라우저 탭의 변경을 현재
+탭 Pinia에 실시간 전파하지는 않지만, 새로고침 뒤에는 IndexedDB와 일치한다.
 
 #### 6.4 에셋 품질·메모리·manifest 통합
 
+**반영 상태: 완료 — 2026-07-30**
+
 작업:
 
-- `play.png`를 실제 PNG로 변환하거나 `.webp`로 이름과 경로를 일치시킴
-- 어두운 UI에서도 식별되는 `play` 아이콘으로 교체
-- `potion.png`를 단일 회복 아이템 스프라이트로 교체
-- 2048×2048 `dirt-red.png`를 시각 품질을 유지하는 범위에서 축소·압축
-- Phaser에서 사용하지 않는 texture preload 제거
-- CSS에서 직접 참조하는 에셋도 중앙 manifest에 포함
-- `key`, `path`, `format`, `dimensions`, `frame`, `source`, `license`를 하나의 manifest에서 관리
-- preload와 무결성 테스트가 동일한 manifest를 소비하도록 구성
-- 매직 바이트, 크기, 프레임 정렬, 사용 여부 검사 추가
+- [x] `play.png`를 실제 PNG로 변환하고 고대비 단일 아이콘으로 교체
+- [x] `potion.png`를 단일 회복 아이템 스프라이트로 교체
+- [x] 2048×2048 `dirt-red.png`를 시각 품질을 유지하며 축소·압축
+- [x] Phaser에서 사용하지 않는 texture preload 제거
+- [x] CSS에서 직접 참조하던 에셋도 중앙 manifest에서 공급
+- [x] `key`, `path`, `format`, `dimensions`, `frame`, `source`, `license`를 하나의 manifest에서 관리
+- [x] preload와 무결성 테스트가 동일한 manifest를 소비하도록 구성
+- [x] 매직 바이트, 크기, 프레임 정렬, 사용 여부 검사 추가
 
 완료 기준:
 
-- 확장자와 실제 포맷이 일치한다.
-- 잘못된 복합 스프라이트가 화면에 노출되지 않는다.
-- 사용하지 않는 이미지가 Phaser TextureManager에 올라가지 않는다.
-- 배경 최적화 전후의 다운로드 크기와 디코드 메모리를 기록한다.
-- 공개 배포라면 모든 에셋의 원본 URL·commit·저작자·라이선스를 추적할 수 있다.
+- [x] 확장자와 실제 포맷이 일치한다.
+- [x] 잘못된 복합 스프라이트가 화면에 노출되지 않는다.
+- [x] 사용하지 않는 이미지가 Phaser TextureManager에 올라가지 않는다.
+- [x] 배경 최적화 전후의 다운로드 크기와 디코드 메모리를 기록한다.
+- [x] 모든 포팅 에셋의 원본 URL·commit·경로·귀속 수준·라이선스 근거를 추적할 수 있다.
+
+`dirt-red.png`의 다운로드 크기는 2,948,342B에서 243,891B로 91.73%,
+RGBA 디코드 메모리는 16MiB에서 1MiB로 93.75% 감소했다. 상세 수치와
+회귀 예산은 `ASSET_METRICS.md`에 기록했다. 새 `play`와 `potion`은
+Relaywake용 생성 에셋이므로 upstream URL과 commit이 존재하지 않음을
+manifest에 명시하고 프로젝트 MIT 라이선스로 구분했다.
+코인 2종과 자석은 각각 Bonsaiheldin·Kenney까지 귀속을 확인했고, 나머지는
+upstream bundle의 저장소·commit·원본 경로·포괄 라이선스 선언과 아트
+크레딧을 기록했다. upstream이 파일별 아티스트 매핑을 제공하지 않는
+항목은 그 신뢰 수준을 manifest에 명시했으므로, 공개·상업 배포에서
+파일별 원저작자 확인이 필수라면 별도 확인이 남는다.
 
 #### 6.5 `SurvivorScene` 점진 분리
 
@@ -359,8 +392,8 @@ SurvivorScene
 | --- | --- | --- |
 | 1 | typecheck 오류 수정과 클린 CI/production preview E2E | P0 반영 완료 |
 | 2 | 핵심 Scene 회귀 테스트와 알려진 게임 결함 수정 | P0 반영 완료 |
-| 3 | Dexie transaction과 설정 저장 오류 처리 | 다음 배치 |
-| 4 | 에셋 수정·최적화·manifest 통합 | 다음 배치 |
+| 3 | Dexie transaction과 설정 저장 오류 처리 | P1 반영 완료 |
+| 4 | 에셋 수정·최적화·manifest 통합 | P1 반영 완료 |
 | 5 | 테스트를 유지한 `SurvivorScene` 점진 분리 | 다음 배치 |
 | 6 | Phaser 동적 import와 번들 분리 | 구조 안정화 후 |
 | 7 | bounded fixed-step 또는 개별 프레임 의존성 보정 | 검증 기반 확보 후 |

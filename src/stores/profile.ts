@@ -1,13 +1,15 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { readProfile, resetDatabase, writeProfile, writeRun } from '../persistence/db';
-import { defaultProfile, ProfileSchema } from '../persistence/schemas';
+import { readProfile, writeRunAndProfile } from '../persistence/db';
+import { defaultProfile } from '../persistence/schemas';
 import type { RunSummary } from '../game/core/types';
+import { useSettingsStore } from './settings';
 
 export const useProfileStore = defineStore('profile', () => {
   const profile = ref(defaultProfile());
   const hydrated = ref(false);
   const coins = computed(() => profile.value.coins);
+  let recordQueue = Promise.resolve();
 
   async function hydrate(): Promise<void> {
     if (hydrated.value) return;
@@ -15,27 +17,23 @@ export const useProfileStore = defineStore('profile', () => {
     hydrated.value = true;
   }
 
-  async function recordRun(summary: RunSummary): Promise<void> {
-    await writeRun(summary);
-    const discovered = new Set(profile.value.discoveredAbilities);
-    const next = ProfileSchema.parse({
-      ...profile.value,
-      coins: profile.value.coins + summary.coins,
-      bestTimeSeconds: Math.max(profile.value.bestTimeSeconds, summary.elapsedSeconds),
-      bestKills: Math.max(profile.value.bestKills, summary.kills),
-      totalRuns: profile.value.totalRuns + 1,
-      discoveredAbilities: [...discovered],
-      updatedAt: new Date().toISOString(),
+  function recordRun(summary: RunSummary): Promise<void> {
+    const operation = recordQueue.then(async () => {
+      const result = await writeRunAndProfile(summary, profile.value);
+      profile.value = result.profile;
     });
-    profile.value = next;
-    await writeProfile(next);
+    recordQueue = operation.catch(() => undefined);
+    return operation;
   }
 
-  async function reset(): Promise<void> {
-    await resetDatabase();
-    profile.value = defaultProfile();
-    hydrated.value = true;
-    await writeProfile(profile.value);
+  function reset(): Promise<void> {
+    const operation = recordQueue.then(async () => {
+      const reset = await useSettingsStore().resetAllPersistence();
+      profile.value = reset.profile;
+      hydrated.value = true;
+    });
+    recordQueue = operation.catch(() => undefined);
+    return operation;
   }
 
   return { profile, hydrated, coins, hydrate, recordRun, reset };
