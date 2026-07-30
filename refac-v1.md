@@ -1,3 +1,8 @@
+src/game/scenes/SurvivorScene.ts는 1,437줄, 메서드 74개이며, 적·무기·드롭·성장·렌더링·오디오가 한 클래스에 모여 있습니다
+
+:
+
+
 권장 리팩토링 순서
 
 원안의 `RunProgression → CombatSystem → EnemyWorld → Scene`보다는 다음 순서가 안전합니다.
