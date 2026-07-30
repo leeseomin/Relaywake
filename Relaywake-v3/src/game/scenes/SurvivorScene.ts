@@ -379,6 +379,10 @@ export class SurvivorScene extends Phaser.Scene {
       .setScale(character.displayScale)
       .setDepth(100)
       .play(`${character.spriteKey}-walk`);
+    // Phaser's default 'safeAuto' mode skips pixel snapping for any scaled sprite, so the camera's
+    // roundPixels never reaches the player. Forcing it is only safe at integer scales, where
+    // rounding the quad corners preserves a uniform texel grid instead of wobbling its width.
+    if (Number.isInteger(character.displayScale)) sprite.vertexRoundMode = 'fullAuto';
     this.player = {
       sprite,
       characterId: character.id,

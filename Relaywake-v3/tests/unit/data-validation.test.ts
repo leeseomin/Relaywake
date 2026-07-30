@@ -26,6 +26,12 @@ describe('Zod-validated game data', () => {
     ]);
   });
 
+  it('renders Star-Tail at an integer scale so its texel grid stays stable in motion', () => {
+    const starTail = characters.find((character) => character.id === 'purple');
+    expect(starTail?.displayScale).toBe(3);
+    expect(Number.isInteger(starTail?.displayScale)).toBe(true);
+  });
+
   it('registers Fire Master with its dedicated fire-orbit loadout', () => {
     const fireMaster = characters.find((character) => character.id === 'fire');
     const fireOrb = abilities.find((ability) => ability.id === 'fireOrb');
