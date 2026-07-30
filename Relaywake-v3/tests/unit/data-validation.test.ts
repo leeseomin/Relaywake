@@ -26,10 +26,11 @@ describe('Zod-validated game data', () => {
     ]);
   });
 
-  it('renders Star-Tail at an integer scale so its texel grid stays stable in motion', () => {
-    const starTail = characters.find((character) => character.id === 'purple');
-    expect(starTail?.displayScale).toBe(3);
-    expect(Number.isInteger(starTail?.displayScale)).toBe(true);
+  it('renders the four Mongle characters at an integer scale so texel grids stay stable in motion', () => {
+    for (const character of characters.slice(0, 4)) {
+      expect(character.displayScale).toBe(3);
+      expect(Number.isInteger(character.displayScale)).toBe(true);
+    }
   });
 
   it('registers Fire Master with its dedicated fire-orbit loadout', () => {

@@ -93,7 +93,10 @@ export const CharacterDefinitionSchema = z.object({
   name: z.object({ ko: z.string().min(1), en: z.string().min(1) }),
   description: z.object({ ko: z.string().min(1), en: z.string().min(1) }),
   spriteKey: z.string().min(1),
-  displayScale: z.number().positive().default(2.7),
+  // Integer scale keeps every 24px texel exactly three screen pixels wide. A fractional scale
+  // cannot divide evenly, so nearest-neighbour sampling reshuffles texel widths as the sprite
+  // drifts sub-pixel -- the shimmer players read as flicker while moving.
+  displayScale: z.number().positive().default(3),
   maxHp: z.number().positive(),
   armor: z.number().nonnegative(),
   moveSpeed: z.number().positive(),

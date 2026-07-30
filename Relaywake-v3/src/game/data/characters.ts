@@ -21,10 +21,7 @@ export const characters = z.array(CharacterDefinitionSchema).parse([
       ko: '별 핀을 단 빠르고 운 좋은 도적. 수리검으로 시작합니다.',
       en: 'A fast, lucky thief marked by a star pin. Starts with Shuriken.',
     },
-    // Integer scale keeps every 24px texel exactly 3 screen pixels wide. The shared 2.7 default
-    // cannot divide evenly, so nearest-neighbour sampling reshuffles texel widths as the sprite
-    // drifts sub-pixel -- most visible on the roster's fastest, highest-contrast character.
-    spriteKey: 'character-startail', displayScale: 3, maxHp: 90, armor: 0, moveSpeed: 204, acceleration: 980,
+    spriteKey: 'character-startail', maxHp: 90, armor: 0, moveSpeed: 204, acceleration: 980,
     luck: 1.15, pickupRadius: 88, startingAbility: 'shuriken',
   },
   {
