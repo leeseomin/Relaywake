@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Light Spinner - 마우스·방향키 이동</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #070811;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+            image-rendering: pixelated;
+        }
+        .ui-panel {
+            position: absolute;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 18, 30, 0.75);
+            padding: 12px 28px;
+            border-radius: 40px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), inset 0 0 1px rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 120, 180, 0.2);
+            letter-spacing: -0.2px;
+            text-align: center;
+            z-index: 10;
+        }
+        .ui-panel span {
+            color: #ff3b00;
+            text-shadow: 0 0 8px rgba(255, 59, 0, 0.6);
+            font-weight: 700;
+        }
+        .ui-help {
+            display: block;
+            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            font-weight: 450;
+            letter-spacing: 0;
+        }
+        .key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 21px;
+            padding: 0 6px;
+            margin: 0 2px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom-color: rgba(255, 255, 255, 0.35);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        #controlStatus {
+            color: #ffca36;
+            font-weight: 700;
+        }
+        @media (max-width: 640px) {
+            .ui-panel {
+                top: 16px;
+                width: calc(100% - 28px);
+                padding: 11px 16px;
+                font-size: 13px;
+                border-radius: 22px;
+            }
+            .ui-help {
+                line-height: 1.55;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-panel">
+        👾 <span>픽셀 라이트 스피너</span> · 이동: <strong id="controlStatus">대기</strong>
+        <small class="ui-help">마우스 클릭·드래그 / 터치 · <span class="key">WASD</span> 또는 <span class="key">방향키</span> · <span class="key">Shift</span> 질주 · <span class="key">Esc</span> 정지</small>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        const controlStatus = document.getElementById('controlStatus');
+        const view = { width: window.innerWidth, height: window.innerHeight, dpr: 1 };
+
+        function resizeCanvas() {
+            view.width = window.innerWidth;
+            view.height = window.innerHeight;
+            view.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            canvas.width = Math.round(view.width * view.dpr);
+            canvas.height = Math.round(view.height * view.dpr);
+            canvas.style.width = `${view.width}px`;
+            canvas.style.height = `${view.height}px`;
+            ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+            ctx.imageSmoothingEnabled = false;
+        }
+        resizeCanvas();
+
+        const pointer = {
+            x: view.width / 2,
+            y: view.height / 2 + 50,
+            down: false,
+            targetActive: false
+        };
+
+        const keys = new Set();
+
+        const player = {
+            x: view.width / 2,
+            y: view.height / 2 + 50,
+            vx: 0,
+            vy: 0,
+            facing: 1,
+            speed: 0,
+            animTime: 0,
+            isMoving: false,
+            controlMode: '대기'
+        };
+
+        // 픽셀 스피너 정의
+        const spinner = {
+            angle: 0,
+            rotSpeed: 0.08,
+            radiusX: 76,
+            radiusY: 27,
+            x: 0,
+            y: 0,
+            pixelSize: 3, // 오브 스프라이트의 픽셀 한 칸
+            trail: []
+        };
+
+        const particles = [];
+        const bgStars = [];
+
+        function createStars() {
+            bgStars.length = 0;
+            const count = Math.max(40, Math.min(80, Math.round((view.width * view.height) / 20000)));
+            for (let i = 0; i < count; i++) {
+                bgStars.push({
+                    x: Math.random() * view.width,
+                    y: Math.random() * view.height,
+                    size: Math.random() > 0.7 ? 3 : 2,
+                    alpha: Math.random() * 0.6 + 0.2,
+                    phase: Math.random() * Math.PI * 2,
+                    speed: 0.8 + Math.random() * 1.2
+                });
+            }
+        }
+        createStars();
+
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+        function updatePointer(e) {
+            const rect = canvas.getBoundingClientRect();
+            pointer.x = e.clientX - rect.left;
+            pointer.y = e.clientY - rect.top;
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            updatePointer(e);
+            pointer.down = true;
+            pointer.targetActive = true;
+            canvas.setPointerCapture?.(e.pointerId);
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            updatePointer(e);
+            if (pointer.down) pointer.targetActive = true;
+        });
+
+        function releasePointer(e) {
+            pointer.down = false;
+            if (canvas.hasPointerCapture?.(e.pointerId)) {
+                canvas.releasePointerCapture(e.pointerId);
+            }
+        }
+        canvas.addEventListener('pointerup', releasePointer);
+        canvas.addEventListener('pointercancel', releasePointer);
+
+        window.addEventListener('keydown', (e) => {
+            const controlled = [
+                'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+                'KeyW', 'KeyA', 'KeyS', 'KeyD',
+                'ShiftLeft', 'ShiftRight', 'Escape'
+            ];
+            if (controlled.includes(e.code)) e.preventDefault();
+
+            if (e.code === 'Escape') {
+                pointer.targetActive = false;
+                pointer.down = false;
+                keys.clear();
+                player.vx = 0;
+                player.vy = 0;
+                return;
+            }
+            keys.add(e.code);
+        });
+
+        window.addEventListener('keyup', (e) => keys.delete(e.code));
+        window.addEventListener('blur', () => {
+            keys.clear();
+            pointer.down = false;
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            createStars();
+            player.x = clamp(player.x, 34, Math.max(34, view.width - 34));
+            player.y = clamp(player.y, 82, Math.max(82, view.height - 22));
+            pointer.x = clamp(pointer.x, 0, view.width);
+            pointer.y = clamp(pointer.y, 0, view.height);
+            spinner.trail.length = 0;
+        });
+
+        // 픽셀 파티클 스포너
+        function spawnPixelParticles(x, y, speedMult) {
+            const chance = 0.5 + Math.min(speedMult / 15, 0.35);
+            if (Math.random() < chance && particles.length < 350) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = 1.2 + Math.random() * 2.5;
+                const colors = ['#ff2a6d', '#ffae19', '#ffe600', '#05d9e8', '#ffffff'];
+                particles.push({
+                    x: Math.floor(x),
+                    y: Math.floor(y),
+                    vx: Math.cos(angle) * spd - player.vx * 0.05,
+                    vy: Math.sin(angle) * spd - player.vy * 0.05,
+                    size: Math.random() > 0.6 ? 4 : 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.025
+                });
+            }
+        }
+
+        // kite5.html의 모던 캐릭터
+        function drawModernCharacter(x, y, facing, runTime, isMoving) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // 미니멀 부드러운 발밑 그림자
+            const shadowGlow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+            shadowGlow.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
+            shadowGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = shadowGlow;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 22, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.scale(facing, 1);
+
+            const legAngle = isMoving ? Math.sin(runTime * 8) * 0.5 : 0;
+            const armAngle = isMoving ? Math.cos(runTime * 8) * 0.3 : 0;
+
+            // 다리 (미니멀 다크 피트)
+            ctx.strokeStyle = '#2b303c';
+            ctx.lineWidth = 4.5;
+            ctx.lineCap = 'round';
+
+            // 뒷다리
+            ctx.beginPath();
+            ctx.moveTo(-3, -16);
+            ctx.lineTo(-3 - Math.sin(legAngle) * 8, -1);
+            ctx.stroke();
+
+            // 앞다리
+            ctx.beginPath();
+            ctx.moveTo(3, -16);
+            ctx.lineTo(3 + Math.sin(legAngle) * 8, -1);
+            ctx.stroke();
+
+            // 바지 (세련된 차콜 톤)
+            ctx.fillStyle = '#1e232d';
+            ctx.beginPath();
+            ctx.roundRect(-8, -26, 16, 12, 4);
+            ctx.fill();
+
+            // 몸통 상의 (코랄 오렌지)
+            ctx.fillStyle = '#ff6b52';
+            ctx.beginPath();
+            ctx.roundRect(-9, -42, 18, 18, 6);
+            ctx.fill();
+
+            // 오른팔과 줄을 잡은 손
+            ctx.strokeStyle = '#f7d3c1';
+            ctx.lineWidth = 4;
+            const handX = 13 + Math.sin(armAngle) * 3;
+            const handY = -35 + Math.cos(armAngle) * 3;
+            ctx.beginPath();
+            ctx.moveTo(4, -36);
+            ctx.lineTo(handX, handY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#f7d3c1';
+            ctx.beginPath();
+            ctx.arc(handX, handY, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 얼굴
+            ctx.fillStyle = '#f7d3c1';
+            ctx.beginPath();
+            ctx.arc(0, -52, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 볼터치
+            ctx.fillStyle = 'rgba(255, 100, 100, 0.35)';
+            ctx.beginPath();
+            ctx.arc(4, -50, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 눈
+            ctx.fillStyle = '#1e232d';
+            ctx.beginPath();
+            ctx.arc(4, -54, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 미니멀 볼륨 웨이브 헤어
+            ctx.fillStyle = '#3a2e39';
+            ctx.beginPath();
+            ctx.arc(-2, -58, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+            const curls = [
+                {x: -8, y: -64, r: 7.5}, {x: -2, y: -68, r: 8},
+                {x: 5, y: -64, r: 7}, {x: -12, y: -56, r: 7},
+                {x: 6, y: -55, r: 6.5}, {x: -4, y: -48, r: 6}
+            ];
+            curls.forEach(c => {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.restore();
+
+            return {
+                x: x + facing * handX,
+                y: y + handY
+            };
+        }
+
+        // 픽셀 직선의 도트 라인 그리기 함수
+        function drawPixelLine(x1, y1, x2, y2, color, dotSize = 2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const dist = Math.hypot(dx, dy);
+            const steps = Math.max(1, Math.floor(dist / dotSize));
+
+            ctx.fillStyle = color;
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const px = Math.floor((x1 + dx * t) / dotSize) * dotSize;
+                const py = Math.floor((y1 + dy * t) / dotSize) * dotSize;
+                ctx.fillRect(px, py, dotSize, dotSize);
+            }
+        }
+
+        // 외곽 장식 없이 오브 자체만 보이는 11 × 11 픽셀 스프라이트
+        const PIXEL_ORB_MATRIX = [
+            [0,0,0,1,1,1,1,1,0,0,0],
+            [0,0,1,2,2,2,2,2,1,0,0],
+            [0,1,2,2,3,3,3,2,2,1,0],
+            [1,2,2,3,4,4,3,3,2,2,1],
+            [1,2,3,4,5,5,4,3,3,2,1],
+            [1,2,3,4,5,5,4,4,3,2,1],
+            [1,2,3,3,4,4,4,3,3,2,1],
+            [1,2,2,3,3,3,3,3,2,2,1],
+            [0,1,2,2,2,3,2,2,2,1,0],
+            [0,0,1,2,2,2,2,2,1,0,0],
+            [0,0,0,1,1,1,1,1,0,0,0]
+        ];
+
+        const PIXEL_ORB_PALETTE = {
+            1: '#8f153b',
+            2: '#ff2a6d',
+            3: '#ff9f1a',
+            4: '#ffe33d',
+            5: '#fffbea'
+        };
+
+        function drawPixelOrb(x, y, pSize) {
+            const size = PIXEL_ORB_MATRIX.length;
+            const offset = Math.floor(size / 2);
+
+            ctx.save();
+            // 위치를 픽셀 그리드에 강제로 맞추지 않아 궤도 중에 튀지 않게 한다.
+            ctx.translate(x, y);
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const val = PIXEL_ORB_MATRIX[r][c];
+                    if (val === 0) continue;
+
+                    ctx.fillStyle = PIXEL_ORB_PALETTE[val];
+                    ctx.fillRect((c - offset) * pSize, (r - offset) * pSize, pSize, pSize);
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function getKeyboardVector() {
+            let x = 0;
+            let y = 0;
+            if (keys.has('ArrowLeft') || keys.has('KeyA')) x -= 1;
+            if (keys.has('ArrowRight') || keys.has('KeyD')) x += 1;
+            if (keys.has('ArrowUp') || keys.has('KeyW')) y -= 1;
+            if (keys.has('ArrowDown') || keys.has('KeyS')) y += 1;
+            const length = Math.hypot(x, y);
+            return length > 0 ? { x: x / length, y: y / length } : { x: 0, y: 0 };
+        }
+
+        function updatePlayer(dt) {
+            const keyboard = getKeyboardVector();
+            const keyboardActive = keyboard.x !== 0 || keyboard.y !== 0;
+            const sprinting = keys.has('ShiftLeft') || keys.has('ShiftRight');
+
+            let inputX = 0;
+            let inputY = 0;
+            let desiredSpeed = 0;
+
+            if (keyboardActive) {
+                pointer.targetActive = false;
+                inputX = keyboard.x;
+                inputY = keyboard.y;
+                desiredSpeed = sprinting ? 10.2 : 6.6;
+                player.controlMode = sprinting ? '키보드 질주' : '키보드';
+            } else if (pointer.targetActive) {
+                const dx = pointer.x - player.x;
+                const dy = pointer.y - player.y;
+                const distance = Math.hypot(dx, dy);
+
+                if (distance > 8) {
+                    inputX = dx / distance;
+                    inputY = dy / distance;
+                    desiredSpeed = Math.min(8.2, Math.max(2.1, distance * 0.055));
+                    player.controlMode = pointer.down ? '마우스 조향' : '클릭 이동';
+                } else {
+                    pointer.targetActive = false;
+                    player.controlMode = '대기';
+                }
+            } else {
+                player.controlMode = '대기';
+            }
+
+            const targetVx = inputX * desiredSpeed;
+            const targetVy = inputY * desiredSpeed;
+            const responsiveness = desiredSpeed > 0 ? Math.min(1, 0.20 * dt) : Math.min(1, 0.14 * dt);
+
+            player.vx += (targetVx - player.vx) * responsiveness;
+            player.vy += (targetVy - player.vy) * responsiveness;
+
+            if (desiredSpeed === 0) {
+                const drag = Math.pow(0.78, dt);
+                player.vx *= drag;
+                player.vy *= drag;
+            }
+
+            if (Math.abs(player.vx) < 0.015) player.vx = 0;
+            if (Math.abs(player.vy) < 0.015) player.vy = 0;
+
+            player.x += player.vx * dt;
+            player.y += player.vy * dt;
+
+            const minX = 34;
+            const maxX = Math.max(minX, view.width - 34);
+            const minY = 82;
+            const maxY = Math.max(minY, view.height - 22);
+
+            if (player.x <= minX || player.x >= maxX) player.vx = 0;
+            if (player.y <= minY || player.y >= maxY) player.vy = 0;
+            player.x = clamp(player.x, minX, maxX);
+            player.y = clamp(player.y, minY, maxY);
+
+            player.speed = Math.hypot(player.vx, player.vy);
+            player.isMoving = player.speed > 0.12;
+            if (player.isMoving) {
+                player.animTime += player.speed * 0.016 * dt;
+                if (Math.abs(player.vx) > 0.08) player.facing = player.vx > 0 ? 1 : -1;
+            }
+
+            controlStatus.textContent = player.controlMode;
+        }
+
+        function drawTargetMarker() {
+            if (!pointer.targetActive) return;
+
+            const pulse = Math.floor(Math.sin(time * 6) * 2);
+            const size = 8 + pulse;
+            const px = Math.floor(pointer.x);
+            const py = Math.floor(pointer.y);
+
+            ctx.fillStyle = 'rgba(255, 174, 25, 0.8)';
+            ctx.fillRect(px - size, py - 1, size * 2, 2);
+            ctx.fillRect(px - 1, py - size, 2, size * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(px - 2, py - 2, 4, 4);
+        }
+
+        let time = 0;
+        let lastFrame = performance.now();
+
+        function animate(now) {
+            const dt = Math.min(2, Math.max(0.25, (now - lastFrame) / 16.6667));
+            lastFrame = now;
+            time += 0.03 * dt;
+
+            ctx.clearRect(0, 0, view.width, view.height);
+
+            // 1. 레트로 분위기 어두운 배경
+            ctx.fillStyle = '#070811';
+            ctx.fillRect(0, 0, view.width, view.height);
+
+            // 2. 픽셀 도트 별빛 배경
+            bgStars.forEach(s => {
+                const alpha = clamp(s.alpha + Math.sin(time * s.speed + s.phase) * 0.2, 0.1, 0.8);
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+            });
+
+            // 3. 물리 및 플레이어 이동
+            updatePlayer(dt);
+            drawTargetMarker();
+
+            // 4. 회전 물리 계산
+            // 플레이어 속도와 분리된 일정한 각속도로 정확한 타원 궤도를 유지한다.
+            spinner.angle += spinner.rotSpeed * dt;
+
+            const handPos = drawModernCharacter(player.x, player.y, player.facing, player.animTime, player.isMoving);
+
+            spinner.x = handPos.x + Math.cos(spinner.angle) * spinner.radiusX;
+            spinner.y = handPos.y + Math.sin(spinner.angle) * spinner.radiusY;
+
+            // 잔상 기록
+            spinner.trail.push({ x: spinner.x, y: spinner.y });
+            if (spinner.trail.length > 28) spinner.trail.shift();
+
+            // 5. 픽셀 잔상 궤적 (Pixel Ribbon Trail)
+            const palette = ['#440022', '#880044', '#ff2a6d', '#ff7700', '#ffae19', '#ffe600', '#ffffff'];
+            for (let i = 0; i < spinner.trail.length; i++) {
+                const pt = spinner.trail[i];
+                const ratio = i / spinner.trail.length;
+                const pIndex = Math.floor(ratio * (palette.length - 1));
+                const blockSize = Math.max(2, Math.floor(ratio * 9));
+
+                ctx.fillStyle = palette[pIndex];
+                ctx.fillRect(
+                    Math.floor(pt.x - blockSize / 2),
+                    Math.floor(pt.y - blockSize / 2),
+                    blockSize,
+                    blockSize
+                );
+            }
+
+            // 6. 픽셀 연결 줄 (Pixel String)
+            drawPixelLine(handPos.x, handPos.y, spinner.x, spinner.y, 'rgba(255, 255, 255, 0.45)', 2);
+
+            // 7. 픽셀 입자 스포너 & 레트로 파티클 업데이트
+            spawnPixelParticles(spinner.x, spinner.y, player.speed);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.life -= p.decay * dt;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                const currentSize = Math.max(1, Math.floor(p.size * p.life));
+                ctx.fillRect(Math.floor(p.x), Math.floor(p.y), currentSize, currentSize);
+            }
+            ctx.globalAlpha = 1.0;
+
+            // 8. 메인 픽셀 아트 스피너 오르브 (Pixel Light Orb)
+            drawPixelOrb(spinner.x, spinner.y, spinner.pixelSize);
+
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
