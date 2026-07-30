@@ -15,6 +15,16 @@ import { abilities } from '../../src/game/data/abilities';
 
 const PUBLIC_ASSETS = resolve(process.cwd(), 'public/assets');
 const PNG_SIGNATURE = '89504e470d0a1a0a';
+const BAKED_ENEMY_FRAMES = [
+  ['enemy-alien', 54],
+  ['enemy-crab', 56],
+  ['enemy-brute', 58],
+  ['enemy-wizard', 56],
+  ['enemy-nailhead', 56],
+  ['enemy-gravity', 58],
+  ['enemy-miniboss', 54],
+  ['enemy-boss', 112],
+] as const;
 
 function publicFile(assetPath: string): string {
   return resolve(process.cwd(), 'public', assetPath.replace(/^\//, ''));
@@ -190,6 +200,24 @@ describe('asset manifest integrity', () => {
     }
   });
 
+  it('bakes generator-derived enemy sheets to their final scale-1 frame sizes', () => {
+    for (const [key, frameSize] of BAKED_ENEMY_FRAMES) {
+      const asset = getAsset(key);
+
+      expect(asset.dimensions, key).toEqual({ width: frameSize * 4, height: frameSize });
+      expect('frame' in asset ? asset.frame : undefined, key).toEqual({
+        width: frameSize,
+        height: frameSize,
+        count: 4,
+      });
+      expect(asset.source, key).toMatchObject({
+        kind: 'project-derived',
+        path: '../monster-generator.html',
+      });
+      expect(asset.source.modified, key).toContain('scripts/generate-enemy-sprites.mjs');
+    }
+  });
+
   it('preloads only manifest entries that Phaser actually consumes', () => {
     const runtimeSources = [
       'src/game/scenes/SurvivorScene.ts',
@@ -251,7 +279,11 @@ describe('asset manifest integrity', () => {
           expect(asset.source.path).toBeNull();
           expect(asset.source.modified).toContain('OpenAI built-in image generation');
         } else {
-          expect(['kite-fire-v2.html', 'pixel-character-maker-mongle.html']).toContain(asset.source.path);
+          expect([
+            'kite-fire-v2.html',
+            'pixel-character-maker-mongle.html',
+            '../monster-generator.html',
+          ]).toContain(asset.source.path);
           expect(asset.source.modified?.length ?? 0).toBeGreaterThan(0);
         }
       }
@@ -274,6 +306,34 @@ describe('asset manifest integrity', () => {
 });
 
 describe('optimized asset quality guards', () => {
+  it('keeps every generated enemy frame visible and animated', () => {
+    for (const [key, frameSize] of BAKED_ENEMY_FRAMES) {
+      const image = decodeRgbaPng(readFileSync(publicFile(getAsset(key).path)));
+      let animatedPixels = 0;
+
+      for (let frame = 0; frame < 4; frame += 1) {
+        let visiblePixels = 0;
+        for (let y = 0; y < frameSize; y += 1) {
+          for (let x = 0; x < frameSize; x += 1) {
+            const offset = (y * image.width + frame * frameSize + x) * 4;
+            if ((image.pixels[offset + 3] ?? 0) >= 128) visiblePixels += 1;
+            if (frame === 0) continue;
+
+            const firstFrame = (y * image.width + x) * 4;
+            const differs = [0, 1, 2, 3].some(
+              (channel) => image.pixels[firstFrame + channel]
+                !== image.pixels[offset + channel],
+            );
+            if (differs) animatedPixels += 1;
+          }
+        }
+        expect(visiblePixels, `${key} frame ${frame}`).toBeGreaterThan(frameSize);
+      }
+
+      expect(animatedPixels, key).toBeGreaterThan(frameSize);
+    }
+  });
+
   it('keeps the generated Roseglass Scout visual fixed', () => {
     const bytes = readFileSync(publicFile(getAsset('character-roseglass').path));
     const digest = createHash('sha256').update(bytes).digest('hex');

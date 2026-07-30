@@ -33,6 +33,25 @@ describe('Zod-validated game data', () => {
     }
   });
 
+  it('keeps enemy gameplay geometry while rendering baked monster sheets at scale 1', () => {
+    expect(enemies.map(({ id, radius, speed, attackRange, displayScale }) => ({
+      id,
+      radius,
+      speed,
+      attackRange,
+      displayScale,
+    }))).toEqual([
+      { id: 'crawler', radius: 17, speed: 54, attackRange: 27, displayScale: 1 },
+      { id: 'crab', radius: 19, speed: 49, attackRange: 30, displayScale: 1 },
+      { id: 'brute', radius: 22, speed: 45, attackRange: 34, displayScale: 1 },
+      { id: 'wizard', radius: 19, speed: 61, attackRange: 230, displayScale: 1 },
+      { id: 'nailhead', radius: 20, speed: 50, attackRange: 275, displayScale: 1 },
+      { id: 'gravity', radius: 21, speed: 39, attackRange: 310, displayScale: 1 },
+      { id: 'miniBoss', radius: 36, speed: 64, attackRange: 48, displayScale: 1 },
+      { id: 'finalBoss', radius: 44, speed: 70, attackRange: 330, displayScale: 1 },
+    ]);
+  });
+
   it('registers Fire Master with its dedicated fire-orbit loadout', () => {
     const fireMaster = characters.find((character) => character.id === 'fire');
     const fireOrb = abilities.find((ability) => ability.id === 'fireOrb');
