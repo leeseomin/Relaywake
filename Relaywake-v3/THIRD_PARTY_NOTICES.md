@@ -28,9 +28,10 @@ attributed to the upstream repository.
 `dunehorn.png` were exported from the user-provided, bundled
 `pixel-character-maker-mongle.html` source with fixed seeds and explicit part
 selections. Each 24×24 A/B walk pair was expanded to an A/B/A/B four-frame
-Phaser sheet without smoothing. The exact seeds and options are recorded in
-`src/game/assets.ts`. These Relaywake project-derived assets are distributed
-under the root MIT License.
+Phaser sheet without smoothing, then its upper 14 rows were locked to the A
+pose so the eyes and face remain fixed while the lower body moves. The exact
+seeds and options are recorded in `src/game/assets.ts`. These Relaywake
+project-derived assets are distributed under the root MIT License.
 
 `public/assets/characters/fire.png` and `public/assets/weapons/fire-orb.png`
 were locally redrawn from the user-provided, bundled `kite-fire-v2.html` source.

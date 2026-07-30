@@ -7,6 +7,7 @@
 - Replaced the four original top-menu operatives with fixed 24×24 characters exported from the bundled `pixel-character-maker-mongle.html` generator.
 - Renamed them to Sprout Runner, Star-Tail Thief, Moonhare Warden, and Dunehorn Bruiser, with matching Korean names and descriptions.
 - Converted each maker A/B walk pair into an A/B/A/B four-frame Phaser sprite sheet while preserving crisp transparent pixels.
+- Locked the four Mongle operatives' eyes, faces, and heads while retaining restrained lower-body walk motion.
 - Retained the legacy internal character IDs so existing local profiles and run records remain compatible.
 
 ### Preserved

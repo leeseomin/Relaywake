@@ -193,7 +193,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'pixel-character-maker-mongle.html',
-      'Seed 141592; round ears, tuft hair, leaf accessory, oval eyes, smile, hue 145, blush and tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet.',
+      'Seed 141592; round ears, tuft hair, leaf accessory, oval eyes, smile, hue 145, blush and tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet, with the upper 14 rows locked to frame A so the eyes and face remain fixed.',
     ),
   },
   {
@@ -205,7 +205,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'pixel-character-maker-mongle.html',
-      'Seed 271828; cat ears, bob hair, star accessory, bead eyes, cat mouth, hue 285, blush and tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet.',
+      'Seed 271828; cat ears, bob hair, star accessory, bead eyes, cat mouth, hue 285, blush and tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet, with the upper 14 rows locked to frame A so the eyes and face remain fixed.',
     ),
   },
   {
@@ -217,7 +217,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'pixel-character-maker-mongle.html',
-      'Seed 314159; bunny ears, long hair, scarf, wide eyes, tooth mouth, hue 210, no blush and no tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet.',
+      'Seed 314159; bunny ears, long hair, scarf, wide eyes, tooth mouth, hue 210, no blush and no tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet, with the upper 14 rows locked to frame A so the eyes and face remain fixed.',
     ),
   },
   {
@@ -229,7 +229,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'pixel-character-maker-mongle.html',
-      'Seed 161803; small horns, tuft hair, headband, sleepy eyes, tooth mouth, hue 28, no blush and no tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet.',
+      'Seed 161803; small horns, tuft hair, headband, sleepy eyes, tooth mouth, hue 28, no blush and no tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet, with the upper 14 rows locked to frame A so the eyes and face remain fixed.',
     ),
   },
   {

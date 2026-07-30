@@ -273,6 +273,42 @@ describe('asset manifest integrity', () => {
 });
 
 describe('optimized asset quality guards', () => {
+  it('keeps Mongle faces fixed while retaining lower-body walk motion', () => {
+    const mongleCharacterKeys = [
+      'character-sprout',
+      'character-startail',
+      'character-moonhare',
+      'character-dunehorn',
+    ] as const;
+
+    for (const key of mongleCharacterKeys) {
+      const image = decodeRgbaPng(readFileSync(publicFile(getAsset(key).path)));
+      let fixedFaceDifferences = 0;
+      let movingBodyDifferences = 0;
+
+      for (let frame = 1; frame < 4; frame += 1) {
+        for (let y = 0; y < image.height; y += 1) {
+          for (let x = 0; x < 24; x += 1) {
+            const frameA = (y * image.width + x) * 4;
+            const comparisonFrame = (y * image.width + x + frame * 24) * 4;
+            const bothTransparent = image.pixels[frameA + 3] === 0
+              && image.pixels[comparisonFrame + 3] === 0;
+            const differs = !bothTransparent && [0, 1, 2, 3].some(
+              (channel) => image.pixels[frameA + channel]
+                !== image.pixels[comparisonFrame + channel],
+            );
+            if (!differs) continue;
+            if (y < 14) fixedFaceDifferences += 1;
+            else movingBodyDifferences += 1;
+          }
+        }
+      }
+
+      expect(fixedFaceDifferences, key).toBe(0);
+      expect(movingBodyDifferences, key).toBeGreaterThan(0);
+    }
+  });
+
   it('keeps the tinted dirt texture within its transfer and decoded-memory budgets', () => {
     const asset = getAsset('background-dirt-red');
     const encodedBytes = statSync(publicFile(asset.path)).size;
