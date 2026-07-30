@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>몽글 메이커 · 픽셀 캐릭터 생성기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161029;
+    --shell:#241b3d;
+    --shell-2:#2f2450;
+    --edge:#4a3878;
+    --edge-hi:#6b52a8;
+    --mint:#7be0c6;
+    --butter:#ffd36e;
+    --coral:#ff8f9c;
+    --bone:#ece6ff;
+    --dim:#9d8fc4;
+    --pixel:"Press Start 2P","DungGeunMo",monospace;
+    --sans:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(123,224,198,.07), transparent 45%),
+      radial-gradient(circle at 88% 92%, rgba(255,211,110,.06), transparent 45%);
+    color:var(--bone);
+    font-family:var(--sans);
+    line-height:1.6;
+    min-height:100vh;
+    padding:28px 16px 56px;
+  }
+  .wrap{max-width:1000px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:22px}
+  .eyebrow{
+    font-family:var(--pixel);font-size:9px;letter-spacing:.14em;
+    color:var(--mint);text-transform:uppercase;margin:0 0 12px;
+  }
+  h1{
+    font-size:clamp(26px,5vw,38px);margin:0;font-weight:800;letter-spacing:-.02em;
+  }
+  h1 .accent{color:var(--butter)}
+  .lede{color:var(--dim);margin:8px 0 0;max-width:56ch;font-size:15px}
+
+  /* ---------- layout ---------- */
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:18px;align-items:start}
+  @media (max-width:860px){.stage{grid-template-columns:1fr}}
+
+  .panel{
+    background:var(--shell);
+    border:3px solid var(--edge);
+    box-shadow:6px 6px 0 rgba(0,0,0,.55);
+    padding:16px;
+  }
+  .panel h2{
+    font-family:var(--pixel);font-size:9px;letter-spacing:.12em;color:var(--mint);
+    margin:0 0 14px;text-transform:uppercase;
+  }
+
+  /* ---------- viewer ---------- */
+  .viewer{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .bezel{
+    background:#0d0a18;border:4px solid var(--edge-hi);
+    box-shadow:inset 0 0 0 3px #0d0a18, 0 0 0 3px rgba(0,0,0,.5);
+    padding:10px;line-height:0;
+  }
+  #screen{
+    width:min(360px,72vw);height:auto;display:block;
+    image-rendering:pixelated;image-rendering:crisp-edges;
+  }
+  .nameplate{text-align:center}
+  .nameplate .nm{
+    font-size:27px;font-weight:800;letter-spacing:.04em;margin:0;
+  }
+  .nameplate .id{
+    font-family:var(--pixel);font-size:9px;color:var(--dim);margin:6px 0 0;letter-spacing:.08em;
+  }
+  .traits{
+    display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 0;padding:0;list-style:none;
+  }
+  .traits li{
+    font-size:12px;color:var(--bone);background:var(--shell-2);
+    border:2px solid var(--edge);padding:3px 8px;
+  }
+  .traits li b{color:var(--mint);font-weight:600}
+
+  /* ---------- controls ---------- */
+  .btn{
+    font-family:inherit;font-size:14px;font-weight:700;color:var(--bone);
+    background:var(--shell-2);border:2px solid var(--edge-hi);
+    padding:10px 12px;cursor:pointer;width:100%;
+    box-shadow:3px 3px 0 rgba(0,0,0,.5);
+    transition:transform .06s steps(2), box-shadow .06s steps(2), background .12s;
+  }
+  .btn:hover{background:#3a2c63}
+  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 rgba(0,0,0,.5)}
+  .btn:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+  .btn.roll{
+    background:var(--butter);color:#241b3d;border-color:#c99b31;
+    box-shadow:3px 3px 0 #7d5f14;font-size:16px;padding:14px 12px;
+  }
+  .btn.roll:hover{background:#ffdf92}
+  .btn.roll:active{box-shadow:0 0 0 #7d5f14}
+  .btn.ghost{background:transparent}
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .field{margin-bottom:10px}
+  .field label{
+    display:block;font-family:var(--pixel);font-size:8px;letter-spacing:.1em;
+    color:var(--dim);margin-bottom:5px;text-transform:uppercase;
+  }
+  select,input[type=text]{
+    width:100%;font-family:inherit;font-size:13px;color:var(--bone);
+    background:#1b1433;border:2px solid var(--edge);padding:7px 8px;
+  }
+  select:focus,input:focus{outline:2px solid var(--mint);outline-offset:1px}
+  input[type=range]{width:100%;accent-color:var(--mint)}
+
+  .swatches{display:flex;gap:4px;margin-top:8px}
+  .swatches i{flex:1;height:22px;border:2px solid rgba(0,0,0,.45);display:block}
+
+  .toggles{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+  .toggles label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--bone);cursor:pointer}
+  .toggles input{accent-color:var(--mint);width:16px;height:16px}
+
+  .divider{height:3px;background:var(--edge);margin:16px -16px;opacity:.6}
+
+  /* ---------- sticker sheet ---------- */
+  .sheet{margin-top:18px}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .sheet-head h2{margin:0}
+  .sheet-head .btn{width:auto;font-size:12px;padding:7px 12px}
+  .strip{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+  @media (max-width:700px){.strip{grid-template-columns:repeat(4,1fr)}}
+  .chip{
+    background:#1b1433;border:2px solid var(--edge);padding:0;cursor:pointer;line-height:0;
+    transition:transform .08s steps(2),border-color .12s;
+  }
+  .chip:hover{transform:translateY(-3px);border-color:var(--mint)}
+  .chip:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+  .chip canvas{width:100%;height:auto;display:block;image-rendering:pixelated}
+
+  footer{margin-top:26px;color:var(--dim);font-size:13px}
+  kbd{
+    font-family:var(--pixel);font-size:9px;background:var(--shell-2);
+    border:2px solid var(--edge);padding:3px 5px;color:var(--bone);
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">24 × 24 px · sprite forge</p>
+    <h1>몽글 <span class="accent">메이커</span></h1>
+    <p class="lede">돌릴 때마다 귀·머리·눈·입·액세서리·색을 새로 조합해 원본과 겹치지 않는 캐릭터를 만듭니다. 마음에 드는 아이는 배경 없는 PNG로 저장하세요.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- viewer -->
+    <section class="panel viewer">
+      <div class="bezel"><canvas id="screen" width="384" height="384"></canvas></div>
+      <div class="nameplate">
+        <p class="nm" id="charName">몽뽀</p>
+        <p class="id" id="charSeed">SEED 000000</p>
+      </div>
+      <ul class="traits" id="traits"></ul>
+    </section>
+
+    <!-- controls -->
+    <section class="panel">
+      <h2>Build</h2>
+      <button class="btn roll" id="roll">🎲 새로 뽑기</button>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="field">
+          <label for="selEars">귀</label>
+          <select id="selEars" data-key="ears"></select>
+        </div>
+        <div class="field">
+          <label for="selHair">머리</label>
+          <select id="selHair" data-key="hair"></select>
+        </div>
+        <div class="field">
+          <label for="selAcc">아이템</label>
+          <select id="selAcc" data-key="acc"></select>
+        </div>
+        <div class="field">
+          <label for="selEyes">눈</label>
+          <select id="selEyes" data-key="eyes"></select>
+        </div>
+        <div class="field">
+          <label for="selMouth">입</label>
+          <select id="selMouth" data-key="mouth"></select>
+        </div>
+        <div class="field">
+          <label for="selBg">배경</label>
+          <select id="selBg">
+            <option value="dirt">흙바닥</option>
+            <option value="grass">풀밭</option>
+            <option value="check">체크</option>
+            <option value="none">투명</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="hue">몸 색상</label>
+        <input type="range" id="hue" min="0" max="359" value="280">
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="toggles">
+        <label><input type="checkbox" id="cbBlush" checked> 볼터치</label>
+        <label><input type="checkbox" id="cbTail"> 꼬리</label>
+        <label><input type="checkbox" id="cbAnim" checked> 숨쉬기</label>
+      </div>
+
+      <div class="divider"></div>
+      <h2>Export</h2>
+      <div class="field">
+        <label for="scale">저장 크기</label>
+        <select id="scale">
+          <option value="1">24 px (원본)</option>
+          <option value="4" selected>96 px (×4)</option>
+          <option value="8">192 px (×8)</option>
+          <option value="16">384 px (×16)</option>
+        </select>
+      </div>
+      <div class="row">
+        <button class="btn" id="savePng">PNG 저장</button>
+        <button class="btn ghost" id="saveSheet">시트 저장</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- sticker sheet -->
+  <section class="panel sheet">
+    <div class="sheet-head">
+      <h2>Litter · 한배 8마리</h2>
+      <button class="btn" id="reroll">다시 섞기</button>
+    </div>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <footer>
+    <kbd>SPACE</kbd> 새로 뽑기 · 저장되는 PNG는 배경이 투명하고, 시트는 걷기용 2프레임이 나란히 들어갑니다.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ 기본 ============ */
+const GW = 24, GH = 24, CX = 12;
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const hsl = (h,s,l)=>`hsl(${((h%360)+360)%360}, ${s}%, ${l}%)`;
+
+/* ============ 옵션 ============ */
+const OPT = {
+  ears:  ["none","cat","round","bunny","horn","antenna"],
+  hair:  ["none","bob","long","tuft"],
+  acc:   ["none","headband","leaf","star","bow","cap","glasses","scarf"],
+  eyes:  ["oval","bead","wide","sleepy"],
+  mouth: ["smile","cat","o","line","tooth"]
+};
+const KO = {
+  ears:{none:"귀 없음",cat:"고양이 귀",round:"동글 귀",bunny:"토끼 귀",horn:"작은 뿔",antenna:"더듬이"},
+  hair:{none:"민머리",bob:"단발",long:"긴 머리",tuft:"뽀글 한 가닥"},
+  acc:{none:"맨몸",headband:"머리띠",leaf:"새싹",star:"별 핀",bow:"리본",cap:"모자",glasses:"안경",scarf:"목도리"},
+  eyes:{oval:"또랑눈",bead:"콩눈",wide:"왕눈",sleepy:"졸린눈"},
+  mouth:{smile:"방긋",cat:"ω 입",o:"오물오물",line:"뾰루퉁",tooth:"덧니"}
+};
+const LABEL = {ears:"귀",hair:"머리",acc:"아이템",eyes:"눈",mouth:"입"};
+
+const S1 = ["몽","뽀","포","루","미","코","도","보","타","뭉","쿠","삐","냥","우","하","조","베","토","꼬","단"];
+const S2 = ["몽","뽀","리","로","미","코","두","비","냥","치","쿠","삐","룡","또","뭉","키","달","순"];
+
+/* ============ 스펙/팔레트 ============ */
+function makeSpec(seed, ov){
+  const rng = mulberry32(seed);
+  const pick = a => a[Math.floor(rng()*a.length)];
+  const s = {
+    seed,
+    ears:  pick(OPT.ears),
+    hair:  pick(OPT.hair),
+    acc:   pick(OPT.acc),
+    eyes:  pick(OPT.eyes),
+    mouth: pick(OPT.mouth),
+    blush: rng() < .72,
+    tail:  rng() < .35,
+    belly: rng() < .55,
+    hue:   Math.floor(rng()*360),
+    hairLight: rng() < .3,
+    accShift: 110 + Math.floor(rng()*130),
+    name: pick(S1)+pick(S2)+(rng()<.3 ? pick(["이","둥","콩",""]) : "")
+  };
+  return Object.assign(s, ov || {});
+}
+
+function makePalette(spec){
+  const h = spec.hue;
+  let ah = (h + spec.accShift) % 360;
+  if (spec.acc === "leaf")  ah = 105;
+  if (spec.acc === "star")  ah = 46;
+  if (spec.acc === "scarf") ah = (h + 180) % 360;
+  const hairH = (h + (spec.hairLight ? 22 : -14) + 360) % 360;
+  return {
+    O: hsl(h, 42, 11),
+    B: hsl(h, 56, 66),
+    D: hsl(h, 50, 51),
+    L: hsl(h, 52, 81),
+    H: spec.hairLight ? hsl(hairH, 45, 78) : hsl(hairH, 34, 25),
+    A: hsl(ah, 62, 62),
+    C: hsl(ah, 58, 44),
+    W: "#fdfbff",
+    K: hsl(h, 48, 15),
+    P: hsl((h + 335) % 360, 72, 73),
+    M: hsl(h, 46, 19)
+  };
+}
+
+/* ============ 그리드 도구 ============ */
+const newGrid = () => Array.from({length:GH}, () => new Array(GW).fill(null));
+function P(g,x,y,c){ x=Math.round(x); y=Math.round(y); if(x>=0&&x<GW&&y>=0&&y<GH) g[y][x]=c; }
+function RECT(g,x0,y0,w,h,c){ for(let y=y0;y<y0+h;y++) for(let x=x0;x<x0+w;x++) P(g,x,y,c); }
+function ELL(g,cx,cy,rx,ry,c,only){
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    const dx=(x+.5-cx)/rx, dy=(y+.5-cy)/ry;
+    if(dx*dx+dy*dy<=1){ if(!only || only(g[y][x])) g[y][x]=c; }
+  }
+}
+const SKIN = v => v==="B"||v==="D"||v==="L"||v==="H";
+
+/* ============ 파츠 ============ */
+function drawEars(g, spec, top, key){
+  switch(spec.ears){
+    case "cat":
+      for(let i=0;i<3;i++){
+        RECT(g, CX-5, top-1-i, 4-i, 1, key);
+        RECT(g, CX+1+i, top-1-i, 4-i, 1, key);
+      }
+      P(g, CX-4, top-1, "P"); P(g, CX+3, top-1, "P");
+      break;
+    case "round":
+      ELL(g, CX-5, top, 2.4, 2.4, key);
+      ELL(g, CX+5, top, 2.4, 2.4, key);
+      break;
+    case "bunny":
+      ELL(g, CX-3.2, top-1.2, 1.5, 3.2, key);
+      ELL(g, CX+3.2, top-1.2, 1.5, 3.2, key);
+      ELL(g, CX-3.2, top-1.2, .6, 2, "P");
+      ELL(g, CX+3.2, top-1.2, .6, 2, "P");
+      break;
+    case "horn":
+      RECT(g, CX-4, top-1, 2, 1, "A"); P(g, CX-4, top-2, "A");
+      RECT(g, CX+2, top-1, 2, 1, "A"); P(g, CX+3, top-2, "A");
+      break;
+    case "antenna":
+      RECT(g, CX-1, top-1, 2, 1, "C");
+      ELL(g, CX, top-2.0, 1.7, 1.6, "A");
+      break;
+  }
+}
+
+function drawAcc(g, spec, top, headCy){
+  switch(spec.acc){
+    case "headband":
+      for(let y=top+2;y<=top+3;y++) for(let x=0;x<GW;x++) if(SKIN(g[y][x])) g[y][x]="A";
+      RECT(g, 17, top+2, 2, 3, "A"); P(g, 18, top+3, "C");
+      break;
+    case "cap": {
+      const brim = headCy - 2;
+      for(let y=top;y<brim;y++) for(let x=0;x<GW;x++) if(SKIN(g[y][x])) g[y][x]="A";
+      for(let x=0;x<GW;x++) if(SKIN(g[brim][x])) g[brim][x]="C";
+      RECT(g, 5, brim, 2, 1, "C"); RECT(g, 17, brim, 2, 1, "C");
+      ELL(g, CX, top-1.6, 1.5, 1.5, "C");
+      break;
+    }
+    case "leaf":
+      P(g, CX, top-1, "C"); P(g, CX, top-2, "C");
+      ELL(g, CX+1.9, top-2.6, 2, 1.2, "A");
+      break;
+    case "star":
+      P(g, 9, top+2, "A"); RECT(g, 8, top+3, 3, 1, "A");
+      P(g, 8, top+4, "A"); P(g, 10, top+4, "A");
+      break;
+    case "bow":
+      RECT(g, 7, top-1, 2, 2, "A"); RECT(g, 10, top-1, 2, 2, "A");
+      RECT(g, 9, top-1, 1, 2, "C");
+      break;
+    case "scarf":
+      for(let y=13;y<=14;y++) for(let x=0;x<GW;x++) if(SKIN(g[y][x])) g[y][x]="A";
+      RECT(g, 15, 15, 2, 2, "C");
+      break;
+  }
+}
+
+function drawFace(g, spec, blink){
+  const eY = 9, L = 8, R = 14;
+  if(blink){
+    [L,R].forEach(a=>{
+      P(g,a-1,eY,"K"); P(g,a,eY-1,"K"); P(g,a+1,eY-1,"K"); P(g,a+2,eY,"K");
+    });
+  } else {
+    switch(spec.eyes){
+      case "bead":
+        RECT(g,L,eY-1,2,3,"K"); RECT(g,R,eY-1,2,3,"K");
+        P(g,L,eY-1,"W"); P(g,R+1,eY-1,"W");
+        break;
+      case "wide":
+        RECT(g,L-1,eY-1,3,3,"W"); RECT(g,R,eY-1,3,3,"W");
+        RECT(g,L,eY,2,2,"K");     RECT(g,R,eY,2,2,"K");
+        P(g,L,eY,"W"); P(g,R+1,eY,"W");
+        break;
+      case "sleepy":
+        RECT(g,L,eY,2,2,"W");   RECT(g,R,eY,2,2,"W");
+        RECT(g,L,eY+1,2,1,"K"); RECT(g,R,eY+1,2,1,"K");
+        RECT(g,L-1,eY-1,4,1,"K"); RECT(g,R-1,eY-1,4,1,"K");
+        break;
+      default:
+        RECT(g,L,eY-1,2,3,"W"); RECT(g,R,eY-1,2,3,"W");
+        RECT(g,L,eY,2,2,"K");   RECT(g,R,eY,2,2,"K");
+        P(g,L,eY,"W"); P(g,R+1,eY,"W");
+    }
+  }
+  const my = 12;
+  switch(spec.mouth){
+    case "cat":  P(g,9,my,"M");  P(g,11,my,"M"); P(g,12,my,"M"); P(g,14,my,"M");
+                 P(g,10,my+1,"M"); P(g,13,my+1,"M"); break;
+    case "o":    RECT(g,11,my,2,2,"M"); break;
+    case "line": RECT(g,11,my,2,1,"M"); break;
+    case "tooth":RECT(g,10,my,4,1,"M"); P(g,11,my+1,"W"); P(g,12,my+1,"W"); break;
+    default:     P(g,10,my,"M"); P(g,13,my,"M"); P(g,11,my+1,"M"); P(g,12,my+1,"M"); break;
+  }
+  if(spec.blush){ RECT(g,8,my-1,2,1,"P"); RECT(g,14,my-1,2,1,"P"); }
+  if(spec.acc === "glasses"){
+    [[7,10],[13,16]].forEach(([a,b])=>{
+      RECT(g,a,7,b-a+1,1,"C"); RECT(g,a,11,b-a+1,1,"C");
+      RECT(g,a,7,1,5,"C");     RECT(g,b,7,1,5,"C");
+    });
+    RECT(g,11,9,2,1,"C");
+  }
+}
+
+function outline(g){
+  const cp = g.map(r=>r.slice());
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    if(cp[y][x]) continue;
+    if((cp[y-1]&&cp[y-1][x]) || (cp[y+1]&&cp[y+1][x]) || cp[y][x-1] || cp[y][x+1]) g[y][x]="O";
+  }
+}
+
+/* ============ 스프라이트 조립 ============ */
+function buildGrid(spec, opt){
+  opt = opt || {};
+  const bob = opt.bob || 0, blink = !!opt.blink;
+  const g = newGrid();
+
+  const headCy = 9 + bob, hrx = 6.0, hry = 5.0;
+  const top = Math.round(headCy - hry);
+  const bodyCy = 15.6 + bob*.5, brx = 5.2, bry = 4.2 - bob*.5;
+  const hairy = spec.hair === "bob" || spec.hair === "long";
+
+  drawEars(g, spec, top, spec.hair === "none" ? "B" : "H");
+  ELL(g, CX, headCy, hrx, hry, hairy ? "H" : "B");
+  if(spec.hair === "long"){ RECT(g, CX-6, headCy, 2, 7, "H"); RECT(g, CX+4, headCy, 2, 7, "H"); }
+
+  RECT(g, CX-7, Math.round(bodyCy-1.5), 2, 2, "B");
+  RECT(g, CX+5, Math.round(bodyCy-1.5), 2, 2, "B");
+  ELL(g, CX, bodyCy, brx, bry, "B");
+  ELL(g, CX, headCy+.8, hrx-1.1, hry-.9, "B");
+
+  if(spec.tail){ RECT(g, CX+5, 17, 2, 2, "B"); P(g, CX+6, 16, "B"); }
+  RECT(g, CX-4, 19+Math.round(bob*.5), 3, 2, "D");
+  RECT(g, CX+1, 19+Math.round(bob*.5), 3, 2, "D");
+
+  for(let y=14;y<GH;y++) for(let x=0;x<GW;x++){
+    if(g[y][x] === "B" && !(y+2 < GH && g[y+2][x])) g[y][x] = "D";
+  }
+  if(spec.belly) ELL(g, CX, bodyCy+.3, brx-2.6, bry-2.2, "L", v => v==="B"||v==="D");
+
+  if(spec.hair === "tuft"){ RECT(g, CX-1, top-1, 2, 1, "H"); P(g, CX, top-2, "H"); P(g, CX+1, top-2, "H"); }
+
+  drawAcc(g, spec, top, headCy);
+  drawFace(g, spec, blink);
+  outline(g);
+  return g;
+}
+
+/* ============ 렌더 ============ */
+function paint(ctx, g, pal, s, ox, oy){
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    const k = g[y][x];
+    if(!k) continue;
+    ctx.fillStyle = pal[k];
+    ctx.fillRect(ox + x*s, oy + y*s, s, s);
+  }
+}
+
+function paintBg(ctx, seed, s, mode){
+  ctx.clearRect(0,0,GW*s,GH*s);
+  if(mode === "none") return;
+  const rng = mulberry32(seed ^ 0x9e37);
+  if(mode === "check"){
+    for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+      ctx.fillStyle = ((x>>1)+(y>>1))%2 ? "#221a3c" : "#1b1433";
+      ctx.fillRect(x*s,y*s,s,s);
+    }
+    return;
+  }
+  const hue = mode === "grass" ? 96 : 32;
+  const sat = mode === "grass" ? 26 : 30;
+  const lit = mode === "grass" ? 32 : 36;
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    const n = (rng()-.5)*9;
+    ctx.fillStyle = hsl(hue + (rng()-.5)*10, sat, lit + n);
+    ctx.fillRect(x*s, y*s, s, s);
+  }
+  for(let i=0;i<7;i++){
+    const px = Math.floor(rng()*GW), py = Math.floor(rng()*GH);
+    ctx.fillStyle = hsl(hue-4, sat-12, lit+18);
+    ctx.fillRect(px*s, py*s, s*2, s);
+    ctx.fillStyle = hsl(hue-4, sat-10, lit+4);
+    ctx.fillRect(px*s, (py+1)*s, s*2, s);
+  }
+  for(let i=0;i<5;i++){
+    const px = Math.floor(rng()*GW), py = Math.floor(rng()*GH);
+    ctx.fillStyle = hsl(104, 40, 40);
+    ctx.fillRect(px*s, py*s, s, s);
+    ctx.fillRect((px+1)*s, (py-1)*s, s, s);
+    ctx.fillRect((px-1)*s, (py-1)*s, s, s);
+  }
+}
+
+function paintShadow(ctx, s){
+  ctx.save();
+  ctx.globalAlpha = .22;
+  ctx.fillStyle = "#000";
+  for(let x=0;x<GW;x++){
+    const dx = (x+.5-12)/4.6;
+    if(dx*dx <= 1) ctx.fillRect(x*s, 21*s, s, s);
+  }
+  ctx.restore();
+}
+
+/* ============ 상태 ============ */
+const screen = document.getElementById("screen");
+const sctx = screen.getContext("2d");
+sctx.imageSmoothingEnabled = false;
+const SC = screen.width / GW; // 16
+
+let seed = Math.floor(Math.random()*1e6);
+let overrides = {};
+let spec, pal, frames;
+
+function rebuild(){
+  spec = makeSpec(seed, overrides);
+  pal  = makePalette(spec);
+  frames = {
+    a: buildGrid(spec, {bob:0}),
+    b: buildGrid(spec, {bob:1}),
+    k: buildGrid(spec, {bob:0, blink:true})
+  };
+  syncUI();
+}
+
+function syncUI(){
+  document.getElementById("charName").textContent = spec.name;
+  document.getElementById("charSeed").textContent = "SEED " + String(spec.seed).padStart(6,"0");
+  document.getElementById("traits").innerHTML =
+    ["ears","hair","acc","eyes","mouth"]
+      .map(k=>`<li><b>${LABEL[k]}</b> ${KO[k][spec[k]]}</li>`).join("");
+  document.getElementById("hue").value = spec.hue;
+  document.getElementById("cbBlush").checked = spec.blush;
+  document.getElementById("cbTail").checked  = spec.tail;
+  ["ears","hair","acc","eyes","mouth"].forEach(k=>{
+    document.querySelector(`[data-key="${k}"]`).value = (k in overrides) ? overrides[k] : "__r";
+  });
+  document.getElementById("swatches").innerHTML =
+    ["B","D","L","H","A","O"].map(k=>`<i style="background:${pal[k]}"></i>`).join("");
+}
+
+/* ============ 애니메이션 ============ */
+let animOn = true, t0 = performance.now();
+function loop(now){
+  const t = now - t0;
+  const bgMode = document.getElementById("selBg").value;
+  paintBg(sctx, seed, SC, bgMode);
+  if(bgMode !== "none") paintShadow(sctx, SC);
+  let g = frames.a;
+  if(animOn){
+    const cyc = t % 4200;
+    if(cyc > 3900 && cyc < 4040) g = frames.k;
+    else g = (t % 1100 < 550) ? frames.a : frames.b;
+  }
+  paint(sctx, g, pal, SC, 0, 0);
+  requestAnimationFrame(loop);
+}
+
+/* ============ 스티커 시트 ============ */
+function fillStrip(){
+  const strip = document.getElementById("strip");
+  strip.innerHTML = "";
+  for(let i=0;i<8;i++){
+    const s2 = Math.floor(Math.random()*1e6);
+    const sp = makeSpec(s2), pl = makePalette(sp);
+    const g = buildGrid(sp, {bob:0});
+    const btn = document.createElement("button");
+    btn.className = "chip";
+    btn.type = "button";
+    btn.title = sp.name + " 데려오기";
+    btn.setAttribute("aria-label", sp.name + " 데려오기");
+    const cv = document.createElement("canvas");
+    cv.width = GW*4; cv.height = GH*4;
+    const cc = cv.getContext("2d");
+    cc.imageSmoothingEnabled = false;
+    paint(cc, g, pl, 4, 0, 0);
+    btn.appendChild(cv);
+    btn.addEventListener("click", ()=>{ seed = s2; overrides = {}; rebuild(); });
+    strip.appendChild(btn);
+  }
+}
+
+/* ============ 저장 ============ */
+function download(canvas, name){
+  const a = document.createElement("a");
+  a.download = name;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+}
+function exportSingle(){
+  const s = +document.getElementById("scale").value;
+  const c = document.createElement("canvas");
+  c.width = GW*s; c.height = GH*s;
+  const x = c.getContext("2d"); x.imageSmoothingEnabled = false;
+  paint(x, frames.a, pal, s, 0, 0);
+  download(c, `${spec.name}_${spec.seed}.png`);
+}
+function exportSheet(){
+  const s = +document.getElementById("scale").value;
+  const c = document.createElement("canvas");
+  c.width = GW*2*s; c.height = GH*s;
+  const x = c.getContext("2d"); x.imageSmoothingEnabled = false;
+  paint(x, frames.a, pal, s, 0, 0);
+  paint(x, frames.b, pal, s, GW*s, 0);
+  download(c, `${spec.name}_${spec.seed}_sheet.png`);
+}
+
+/* ============ 이벤트 ============ */
+["ears","hair","acc","eyes","mouth"].forEach(k=>{
+  const sel = document.querySelector(`[data-key="${k}"]`);
+  sel.innerHTML = `<option value="__r">랜덤</option>` +
+    OPT[k].map(v=>`<option value="${v}">${KO[k][v]}</option>`).join("");
+  sel.addEventListener("change", ()=>{
+    if(sel.value === "__r") delete overrides[k];
+    else overrides[k] = sel.value;
+    rebuild();
+  });
+});
+document.getElementById("hue").addEventListener("input", e=>{
+  overrides.hue = +e.target.value; rebuild();
+});
+document.getElementById("cbBlush").addEventListener("change", e=>{
+  overrides.blush = e.target.checked; rebuild();
+});
+document.getElementById("cbTail").addEventListener("change", e=>{
+  overrides.tail = e.target.checked; rebuild();
+});
+document.getElementById("cbAnim").addEventListener("change", e=>{ animOn = e.target.checked; });
+document.getElementById("roll").addEventListener("click", ()=>{
+  seed = Math.floor(Math.random()*1e6); overrides = {}; rebuild();
+});
+document.getElementById("reroll").addEventListener("click", fillStrip);
+document.getElementById("savePng").addEventListener("click", exportSingle);
+document.getElementById("saveSheet").addEventListener("click", exportSheet);
+window.addEventListener("keydown", e=>{
+  if(e.code === "Space" && !/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)){
+    e.preventDefault();
+    seed = Math.floor(Math.random()*1e6); overrides = {}; rebuild();
+  }
+});
+if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  animOn = false;
+  document.getElementById("cbAnim").checked = false;
+}
+
+rebuild();
+fillStrip();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
