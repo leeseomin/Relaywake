@@ -24,7 +24,7 @@ on 2026-07-30 and locally processed into transparent PNGs. They are
 Relaywake-owned assets, are distributed under the root MIT License, and are not
 attributed to the upstream repository.
 
-`public/assets/characters/sprout.png`, `startail.png`, `moonhare.png`, and
+`public/assets/characters/roseglass.png`, `startail.png`, `moonhare.png`, and
 `dunehorn.png` were exported from the user-provided, bundled
 `pixel-character-maker-mongle.html` source with fixed seeds and explicit part
 selections. Each 24×24 A/B walk pair was expanded to an A/B/A/B four-frame

@@ -19,7 +19,7 @@ describe('Zod-validated game data', () => {
       spriteKey,
       en: name.en,
     }))).toEqual([
-      { id: 'blue', spriteKey: 'character-sprout', en: 'Sprout Runner' },
+      { id: 'blue', spriteKey: 'character-roseglass', en: 'Roseglass Scout' },
       { id: 'purple', spriteKey: 'character-startail', en: 'Star-Tail Thief' },
       { id: 'white', spriteKey: 'character-moonhare', en: 'Moonhare Warden' },
       { id: 'gray', spriteKey: 'character-dunehorn', en: 'Dunehorn Bruiser' },

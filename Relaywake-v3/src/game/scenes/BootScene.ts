@@ -24,7 +24,7 @@ export class BootScene extends Phaser.Scene {
 
   public create(): void {
     const animatedTextures = [
-      ['character-sprout', 'character-sprout-walk'],
+      ['character-roseglass', 'character-roseglass-walk'],
       ['character-startail', 'character-startail-walk'],
       ['character-moonhare', 'character-moonhare-walk'],
       ['character-dunehorn', 'character-dunehorn-walk'],

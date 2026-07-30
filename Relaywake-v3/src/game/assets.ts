@@ -185,15 +185,15 @@ export const assetManifest = [
   },
 
   {
-    key: 'character-sprout',
-    path: '/assets/characters/sprout.png',
+    key: 'character-roseglass',
+    path: '/assets/characters/roseglass.png',
     format: 'png',
     dimensions: { width: 96, height: 24 },
     frame: { width: 24, height: 24, count: 4 },
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'pixel-character-maker-mongle.html',
-      'Seed 141592; round ears, tuft hair, leaf accessory, oval eyes, smile, hue 145, blush and tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet, with the upper 14 rows locked to frame A so the eyes and face remain fixed.',
+      'Seed 947004; no ears, long hair, glasses, oval eyes, tooth mouth, hue 330, no blush and no tail. Exported at 24px and expanded from the maker A/B walk pair to an A/B/A/B four-frame Phaser sheet, with the upper 14 rows locked to frame A so the eyes and face remain fixed.',
     ),
   },
   {

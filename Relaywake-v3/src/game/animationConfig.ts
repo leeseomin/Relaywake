@@ -1,5 +1,5 @@
 const mongleCharacterTextures = new Set([
-  'character-sprout',
+  'character-roseglass',
   'character-startail',
   'character-moonhare',
   'character-dunehorn',

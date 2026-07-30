@@ -55,7 +55,7 @@ Verified for the 3.0.0 Mongle operative replacement on 2026-07-30:
 - transpiled and executed `src/game/assets.ts` independently; all 42 public
   image files match the manifest in both directions, including byte-derived
   formats, dimensions, and frame geometry
-- Sprout Runner, Star-Tail Thief, Moonhare Warden, and Dunehorn Bruiser each
+- Roseglass Scout, Star-Tail Thief, Moonhare Warden, and Dunehorn Bruiser each
   ship as a 96×24 RGBA sheet containing four 24×24 frames
 - the four source and production copies have matching SHA-256 hashes, and the
   removed `blue.png`, `purple.png`, `white.png`, and `gray.png` files and their

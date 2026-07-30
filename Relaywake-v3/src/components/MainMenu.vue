@@ -12,14 +12,14 @@ const emit = defineEmits<{
 const selected = ref<CharacterId>('blue');
 const selectedCharacter = computed(() => characters.find((character) => character.id === selected.value) ?? characters[0]);
 const characterSprites: Record<CharacterId, string> = {
-  blue: assetPath('character-sprout'),
+  blue: assetPath('character-roseglass'),
   purple: assetPath('character-startail'),
   white: assetPath('character-moonhare'),
   gray: assetPath('character-dunehorn'),
   fire: assetPath('character-fire'),
 };
 const characterCodes: Record<CharacterId, string> = {
-  blue: 'SPROUT',
+  blue: 'ROSEGLASS',
   purple: 'STARTAIL',
   white: 'MOONHARE',
   gray: 'DUNEHORN',

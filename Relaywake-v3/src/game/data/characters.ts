@@ -5,12 +5,12 @@ export const characters = z.array(CharacterDefinitionSchema).parse([
   {
     // Stable legacy ID retained so existing local profiles and run rows remain readable.
     id: 'blue',
-    name: { ko: '새싹 러너', en: 'Sprout Runner' },
+    name: { ko: '로즈글라스 스카우트', en: 'Roseglass Scout' },
     description: {
-      ko: '균형 잡힌 새싹 정찰자. AK-47로 시작합니다.',
-      en: 'A balanced sprout scout. Starts with the AK-47.',
+      ko: '분홍 장발과 청록 안경을 쓴 균형형 정찰자. AK-47로 시작합니다.',
+      en: 'A balanced scout with rose hair and teal glasses. Starts with the AK-47.',
     },
-    spriteKey: 'character-sprout', maxHp: 100, armor: 0, moveSpeed: 184, acceleration: 920,
+    spriteKey: 'character-roseglass', maxHp: 100, armor: 0, moveSpeed: 184, acceleration: 920,
     luck: 1, pickupRadius: 78, startingAbility: 'machineGun',
   },
   {

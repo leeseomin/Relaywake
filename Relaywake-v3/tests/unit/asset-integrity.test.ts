@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 import { inflateSync } from 'node:zlib';
@@ -273,9 +274,16 @@ describe('asset manifest integrity', () => {
 });
 
 describe('optimized asset quality guards', () => {
+  it('keeps the generated Roseglass Scout visual fixed', () => {
+    const bytes = readFileSync(publicFile(getAsset('character-roseglass').path));
+    const digest = createHash('sha256').update(bytes).digest('hex');
+
+    expect(digest).toBe('934b750e9367088b59eacd6b0289794929ed9c2753ab8f484b2238454906ab2b');
+  });
+
   it('keeps Mongle faces fixed while retaining lower-body walk motion', () => {
     const mongleCharacterKeys = [
-      'character-sprout',
+      'character-roseglass',
       'character-startail',
       'character-moonhare',
       'character-dunehorn',
