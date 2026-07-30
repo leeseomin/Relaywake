@@ -149,8 +149,8 @@
         const spinner = {
             angle: 0,
             rotSpeed: 0.08,
-            radiusX: 76,
-            radiusY: 27,
+            radiusX: 60,
+            radiusY: 55,
             x: 0,
             y: 0,
             pixelSize: 3, // 오브 스프라이트의 픽셀 한 칸
@@ -243,17 +243,19 @@
         });
 
         // 픽셀 파티클 스포너
-        function spawnPixelParticles(x, y, speedMult) {
-            const chance = 0.5 + Math.min(speedMult / 15, 0.35);
+        function spawnPixelParticles(relativeX, relativeY) {
+            // 이동 여부와 관계없이 같은 밀도로 불꽃을 생성한다.
+            const chance = 0.58;
             if (Math.random() < chance && particles.length < 350) {
                 const angle = Math.random() * Math.PI * 2;
                 const spd = 1.2 + Math.random() * 2.5;
                 const colors = ['#ff2a6d', '#ffae19', '#ffe600', '#05d9e8', '#ffffff'];
                 particles.push({
-                    x: Math.floor(x),
-                    y: Math.floor(y),
-                    vx: Math.cos(angle) * spd - player.vx * 0.05,
-                    vy: Math.sin(angle) * spd - player.vy * 0.05,
+                    // 인물 중심에 대한 상대 좌표로 보관해 이동 시에도 함께 움직인다.
+                    x: relativeX,
+                    y: relativeY,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd,
                     size: Math.random() > 0.6 ? 4 : 2,
                     color: colors[Math.floor(Math.random() * colors.length)],
                     life: 1.0,
@@ -557,11 +559,16 @@
 
             const handPos = drawModernCharacter(player.x, player.y, player.facing, player.animTime, player.isMoving);
 
-            spinner.x = handPos.x + Math.cos(spinner.angle) * spinner.radiusX;
-            spinner.y = handPos.y + Math.sin(spinner.angle) * spinner.radiusY;
+            // 발 위치가 아닌 몸통 중앙을 공전 중심으로 삼아 인물 주위를 돈다.
+            const orbitCenterX = player.x;
+            const orbitCenterY = player.y - 34;
+            const orbitOffsetX = Math.cos(spinner.angle) * spinner.radiusX;
+            const orbitOffsetY = Math.sin(spinner.angle) * spinner.radiusY;
+            spinner.x = orbitCenterX + orbitOffsetX;
+            spinner.y = orbitCenterY + orbitOffsetY;
 
-            // 잔상 기록
-            spinner.trail.push({ x: spinner.x, y: spinner.y });
+            // 잔상도 인물 중심에 대한 상대 좌표로 기록해 원형 궤적을 유지한다.
+            spinner.trail.push({ x: orbitOffsetX, y: orbitOffsetY });
             if (spinner.trail.length > 28) spinner.trail.shift();
 
             // 5. 픽셀 잔상 궤적 (Pixel Ribbon Trail)
@@ -571,11 +578,13 @@
                 const ratio = i / spinner.trail.length;
                 const pIndex = Math.floor(ratio * (palette.length - 1));
                 const blockSize = Math.max(2, Math.floor(ratio * 9));
+                const trailX = orbitCenterX + pt.x;
+                const trailY = orbitCenterY + pt.y;
 
                 ctx.fillStyle = palette[pIndex];
                 ctx.fillRect(
-                    Math.floor(pt.x - blockSize / 2),
-                    Math.floor(pt.y - blockSize / 2),
+                    trailX - blockSize / 2,
+                    trailY - blockSize / 2,
                     blockSize,
                     blockSize
                 );
@@ -585,7 +594,7 @@
             drawPixelLine(handPos.x, handPos.y, spinner.x, spinner.y, 'rgba(255, 255, 255, 0.45)', 2);
 
             // 7. 픽셀 입자 스포너 & 레트로 파티클 업데이트
-            spawnPixelParticles(spinner.x, spinner.y, player.speed);
+            spawnPixelParticles(orbitOffsetX, orbitOffsetY);
 
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
@@ -601,7 +610,7 @@
                 ctx.fillStyle = p.color;
                 ctx.globalAlpha = p.life;
                 const currentSize = Math.max(1, Math.floor(p.size * p.life));
-                ctx.fillRect(Math.floor(p.x), Math.floor(p.y), currentSize, currentSize);
+                ctx.fillRect(orbitCenterX + p.x, orbitCenterY + p.y, currentSize, currentSize);
             }
             ctx.globalAlpha = 1.0;
 
