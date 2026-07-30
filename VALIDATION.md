@@ -1,36 +1,71 @@
-# Validation record — v2.1.0
+# Relaywake validation
 
-## Checks completed in this environment
+## Supported toolchain
 
-- Parsed every project JSON file.
-- Syntax-transpiled 56 TypeScript files and Vue `<script setup lang="ts">` blocks with the installed TypeScript compiler.
-- Checked all 9 Vue templates for structurally balanced markup.
-- Checked the global stylesheet for balanced blocks.
-- Verified Korean and English localization tables expose the same 41 keys and that all statically referenced keys exist.
-- Verified all 40 absolute `/assets/...` references resolve to files under `public/assets`.
-- Strict-type-checked the new pure pause-state and keyboard-routing modules with `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, unused checks, and implicit-return checks enabled.
-- Executed pure regression assertions confirming:
-  - a stale `paused=true` transition cannot replace `levelUp`;
-  - level-up completion returns to `playing`;
-  - stale pause events cannot move the menu into gameplay;
-  - held/repeated `P` input is ignored;
-  - `P` cannot replace the level-up overlay;
-  - number keys map to the expected upgrade slot.
-- Added Vitest regression suites for hotkeys, session transitions, and Pinia overlay state.
-- Expanded the Playwright flow to verify that level-up is visible while the pause dialog remains absent, then select an upgrade with the `1` key.
-- Statically verified that `SurvivorScene.openLevelUp()` emits the dedicated `levelUp` event and no longer emits `paused=true`.
+- Node.js: `^20.19.0 || >=22.12.0`
+- npm: `10.9.2`
+- GitHub Actions reference environment: Node.js `22.14.0`, npm `10.9.2`, Ubuntu
+- Dependency source of truth: the tracked lockfile, installed with `npm ci`
 
-## Package-manager limitation
+## Release gate
 
-The environment's configured npm registry returned `404` for `@playwright/test`, and direct public-registry access timed out. Therefore dependency installation, the real `vue-tsc`/Vite production build, Vitest runner, and Playwright browser suite could not be executed here.
+`npm run check` is the single release-validation entry point. It stops at the
+first failure and runs these stages in order:
 
-Run the complete verification in a normal npm environment:
+1. strict TypeScript/Vue typecheck
+2. Vitest unit suite
+3. Vite production bundle into `dist`
+4. Playwright E2E (`test:e2e:run`) against `vite preview` serving that `dist`
+
+The Playwright server configuration never reuses a process already listening on
+port `4173`. This prevents a Vite development server from accidentally satisfying
+the production E2E gate.
+
+`npm run test:e2e` remains a standalone developer command: it creates a fresh
+production bundle before invoking `test:e2e:run`. The full gate invokes the
+internal runner directly because it has already built the same source state.
+
+For a clean local run:
 
 ```bash
-npm install
-npm run typecheck
-npm run test
-npm run build
+npm ci
 npx playwright install chromium
-npm run test:e2e
+npm run check
 ```
+
+On Linux, install the browser and its system libraries with:
+
+```bash
+npx playwright install --with-deps chromium
+```
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs for pull requests and pushes to `main`. It:
+
+- pins the reference Node.js and npm versions;
+- restores npm's download cache and installs dependencies with `npm ci`;
+- caches Chromium by operating system and `package-lock.json` hash;
+- installs Chromium plus required runner libraries; and
+- invokes only `npm run check` for the ordered release gate.
+
+Any failed typecheck, unit test, production build, preview startup, or browser
+test fails the job and blocks the gate.
+
+## Current local verification
+
+Verified on 2026-07-30:
+
+- `npm ci`: passed; 118 packages installed, 0 vulnerabilities
+- `npm run typecheck`: passed
+- `npm run test`: passed; 14 files and 29 tests
+- `npm run build:bundle`: passed; 149 modules transformed
+- production JavaScript: 1,698.09 kB, 462.79 kB gzip
+- `npm run test:e2e:run`: passed; 5 tests passed and the desktop copy of the
+  mobile-only touch test was intentionally skipped
+- `npm run check`: passed from typecheck through production-preview E2E
+
+The local shell used Node.js `25.3.0` and npm `11.13.0`, so `npm ci` emitted the
+expected engine warning for the repository's pinned npm `10.9.2`. The
+authoritative CI job installs and runs the supported reference toolchain,
+Node.js `22.14.0` with npm `10.9.2`.

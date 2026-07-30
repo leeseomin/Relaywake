@@ -1,6 +1,12 @@
 import Phaser from 'phaser';
 import { gameEvents } from '../../app/gameEvents';
 import { iconUrl } from '../assets';
+import {
+  FINAL_BOSS_COIN_REWARD,
+  resolveDamage,
+  resolveSideSlashPattern,
+  type SlashSide,
+} from '../core/combat';
 import { applyExperience, xpRequiredForLevel } from '../core/xp';
 import { circleOverlap, clamp, distanceSquared, normalize } from '../core/math';
 import { SeededRandom } from '../core/rng';
@@ -19,7 +25,9 @@ import type { AbilityId, EnemyDefinition, WeaponStats } from '../data/schemas';
 import { attachActiveScene, detachActiveScene } from '../sceneBridge';
 import { AbilityDirector } from '../systems/AbilityDirector';
 import { ObjectPool } from '../systems/ObjectPool';
+import { syncPresentationPause } from '../systems/PresentationPause';
 import { SpatialHashGrid, type SpatialPoint } from '../systems/SpatialHashGrid';
+import { separateSpatialCircles } from '../systems/SpatialSeparation';
 import { SpawnDirector } from '../systems/SpawnDirector';
 
 type PickupKind = 'gem' | 'coin' | 'health' | 'magnet' | 'bomb' | 'chest';
@@ -189,8 +197,10 @@ export class SurvivorScene extends Phaser.Scene {
   private damageDealt = 0;
   private touchX = 0;
   private touchY = 0;
-  private macheteSide = 1;
+  private macheteSide: SlashSide = 1;
   private audioContext: AudioContext | null = null;
+  private audioPaused = false;
+  private readonly activeTones = new Map<OscillatorNode, GainNode>();
 
   public constructor() {
     super({ key: 'SurvivorScene' });
@@ -221,7 +231,7 @@ export class SurvivorScene extends Phaser.Scene {
     this.emitHud(true);
   }
 
-  public update(_time: number, deltaMs: number): void {
+  public override update(_time: number, deltaMs: number): void {
     if (this.paused || this.ended) return;
     const delta = Math.min(0.05, deltaMs / 1000);
     this.elapsedSeconds += delta;
@@ -236,7 +246,8 @@ export class SurvivorScene extends Phaser.Scene {
     this.updateRecovery(delta);
     this.updateSpawning(delta);
     this.updateEnemies(delta);
-    this.enemyGrid.rebuild(this.enemies);
+    separateSpatialCircles(this.enemies, this.enemyGrid);
+    this.syncEnemyPositions();
     this.updateOrbiters(delta);
     this.updateWeapons();
     this.updateMelee(delta);
@@ -257,28 +268,23 @@ export class SurvivorScene extends Phaser.Scene {
     gameEvents.emit('toast', `${getAbility(id).name[this.options.preferences.locale]} · Lv.${state.level}`);
     this.pendingLevelUps = Math.max(0, this.pendingLevelUps - 1);
     this.levelUpOpen = false;
-    this.tone(640, 0.08);
     if (this.pendingLevelUps > 0) {
       if (!this.openLevelUp()) {
+        this.applyPausedState(false);
         gameEvents.emit('paused', false);
         this.emitHud(true);
       }
     } else {
-      this.paused = false;
+      this.applyPausedState(false);
       gameEvents.emit('paused', false);
       this.emitHud(true);
     }
+    if (!this.paused) this.tone(640, 0.08);
   }
 
   public setPaused(paused: boolean): void {
     if (this.ended || this.levelUpOpen || this.paused === paused) return;
-    this.paused = paused;
-    if (paused) {
-      this.touchX = 0;
-      this.touchY = 0;
-      this.player.vx = 0;
-      this.player.vy = 0;
-    }
+    this.applyPausedState(paused);
     gameEvents.emit('paused', paused);
     this.emitHud(true);
   }
@@ -304,6 +310,10 @@ export class SurvivorScene extends Phaser.Scene {
       enemies: this.enemies.filter((enemy) => enemy.active).length,
       projectiles: this.projectiles.filter((projectile) => projectile.active).length,
       elapsedSeconds: this.elapsedSeconds,
+      touchX: this.touchX,
+      touchY: this.touchY,
+      presentationPaused: this.anims.paused && this.tweens.paused,
+      audioPaused: this.audioPaused,
       screen: this.ended ? 'gameOver' : this.levelUpOpen ? 'levelUp' : this.paused ? 'paused' : 'playing',
     };
   }
@@ -319,6 +329,16 @@ export class SurvivorScene extends Phaser.Scene {
 
   public testSpawnEnemy(): void {
     this.spawnEnemy('crawler', 145);
+  }
+
+  public testKillFinalBoss(): void {
+    if (this.ended) return;
+    let boss = this.enemies.find((enemy) => enemy.active && enemy.definition.id === 'finalBoss');
+    if (!boss) {
+      this.spawnEnemy('finalBoss', 180);
+      boss = this.enemies.find((enemy) => enemy.active && enemy.definition.id === 'finalBoss');
+    }
+    if (boss) this.damageEnemy(boss, boss.hp, 0, this.player.x, this.player.y, false);
   }
 
   public testFinish(victory: boolean): void {
@@ -532,21 +552,7 @@ export class SurvivorScene extends Phaser.Scene {
       enemy.x += (directionX * enemy.definition.speed * moveDirection + enemy.knockbackX) * delta;
       enemy.y += (directionY * enemy.definition.speed * moveDirection + enemy.knockbackY) * delta;
 
-      const neighbors = this.enemyGrid.queryCircle(enemy.x, enemy.y, enemy.radius * 2.2);
-      for (const neighbor of neighbors) {
-        if (neighbor.id === enemy.id || !neighbor.active) continue;
-        const separationX = enemy.x - neighbor.x;
-        const separationY = enemy.y - neighbor.y;
-        const separationLength = Math.hypot(separationX, separationY);
-        const desired = enemy.radius + neighbor.radius;
-        if (separationLength > 0 && separationLength < desired) {
-          const push = (desired - separationLength) * 0.5;
-          enemy.x += (separationX / separationLength) * push;
-          enemy.y += (separationY / separationLength) * push;
-        }
-      }
-
-      enemy.sprite.setPosition(enemy.x, enemy.y).setFlipX(directionX < 0);
+      enemy.sprite.setFlipX(directionX < 0);
       if (distance > 2200 && !enemy.definition.boss) {
         this.deactivateEnemy(enemy, false);
         continue;
@@ -561,6 +567,12 @@ export class SurvivorScene extends Phaser.Scene {
         enemy.attackTimer = enemy.definition.attackCooldown;
         this.fireEnemyWeapon(enemy, directionX, directionY);
       }
+    }
+  }
+
+  private syncEnemyPositions(): void {
+    for (const enemy of this.enemies) {
+      if (enemy.active) enemy.sprite.setPosition(enemy.x, enemy.y);
     }
   }
 
@@ -689,13 +701,12 @@ export class SurvivorScene extends Phaser.Scene {
   }
 
   private fireSideSlash(id: AbilityId, stats: WeaponStats): void {
-    if (id === 'sword') {
-      this.createMelee(id, stats, 0, Math.PI * 0.34, 0);
-      this.createMelee(id, stats, Math.PI, Math.PI * 0.34, 0);
-    } else {
-      const angle = this.macheteSide > 0 ? 0 : Math.PI;
-      this.macheteSide *= -1;
-      this.createMelee(id, stats, angle, Math.PI * 0.45, this.macheteSide * 1.8);
+    if (id !== 'sword' && id !== 'machete') return;
+    const pattern = resolveSideSlashPattern(id, this.player.facingAngle, this.macheteSide);
+    this.macheteSide = pattern.nextSide;
+    const arcHalfAngle = id === 'sword' ? Math.PI * 0.34 : Math.PI * 0.45;
+    for (const angle of pattern.angles) {
+      this.createMelee(id, stats, angle, arcHalfAngle, pattern.angularVelocity);
     }
   }
 
@@ -1058,15 +1069,11 @@ export class SurvivorScene extends Phaser.Scene {
     if (choices.length === 0) {
       this.pendingLevelUps = 0;
       this.levelUpOpen = false;
-      this.paused = false;
+      this.applyPausedState(false);
       return false;
     }
     this.levelUpOpen = true;
-    this.paused = true;
-    this.touchX = 0;
-    this.touchY = 0;
-    this.player.vx = 0;
-    this.player.vy = 0;
+    this.applyPausedState(true);
     const views: AbilityChoiceView[] = choices.map((ability) => {
       const current = this.abilities.get(ability.id)?.level ?? 0;
       return {
@@ -1084,7 +1091,6 @@ export class SurvivorScene extends Phaser.Scene {
     // Level-up owns its own Vue overlay. Emitting a generic pause event here
     // would overwrite the level-up screen with the manual pause dialog.
     gameEvents.emit('levelUp', views);
-    this.tone(580, 0.1);
     return true;
   }
 
@@ -1097,8 +1103,9 @@ export class SurvivorScene extends Phaser.Scene {
     allowLifesteal: boolean,
   ): void {
     if (!enemy.active || amount <= 0) return;
-    enemy.hp -= amount;
-    this.damageDealt += amount;
+    const resolution = resolveDamage(enemy.hp, amount);
+    enemy.hp = resolution.remainingHp;
+    this.damageDealt += resolution.appliedDamage;
     enemy.flashTimer = 0.08;
     enemy.sprite.setTint(0xffffff);
     if (knockback > 0) {
@@ -1106,7 +1113,9 @@ export class SurvivorScene extends Phaser.Scene {
       enemy.knockbackX += direction.x * knockback * 58;
       enemy.knockbackY += direction.y * knockback * 58;
     }
-    if (this.options.preferences.damageNumbers) this.showDamageNumber(enemy.x, enemy.y - enemy.radius, amount, 0xffe0b0);
+    if (this.options.preferences.damageNumbers) {
+      this.showDamageNumber(enemy.x, enemy.y - enemy.radius, resolution.appliedDamage, 0xffe0b0);
+    }
     if (allowLifesteal) this.tryLifesteal();
     if (enemy.hp <= 0) this.killEnemy(enemy);
   }
@@ -1126,8 +1135,14 @@ export class SurvivorScene extends Phaser.Scene {
     this.kills += 1;
 
     if (definition.id === 'finalBoss') {
-      this.spawnPickup('chest', x, y, 1);
+      this.coins += FINAL_BOSS_COIN_REWARD;
       this.deactivateEnemy(enemy, false);
+      gameEvents.emit(
+        'toast',
+        this.options.preferences.locale === 'ko'
+          ? `최종 보스 보상 · ◆ ${FINAL_BOSS_COIN_REWARD}`
+          : `Final boss reward · ◆ ${FINAL_BOSS_COIN_REWARD}`,
+      );
       this.finishRun(true);
       return;
     }
@@ -1239,8 +1254,8 @@ export class SurvivorScene extends Phaser.Scene {
   private finishRun(victory: boolean): void {
     if (this.ended) return;
     this.ended = true;
-    this.paused = true;
     this.levelUpOpen = false;
+    this.applyPausedState(true, false);
     const id = globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}-${Math.floor(this.rng.next() * 1_000_000)}`;
     const summary: RunSummary = {
       id,
@@ -1324,8 +1339,67 @@ export class SurvivorScene extends Phaser.Scene {
     return Math.max(target, value - amount);
   }
 
+  private applyPausedState(paused: boolean, pauseRawAudio = true): void {
+    if (this.paused === paused) return;
+    this.paused = paused;
+    if (paused) {
+      this.touchX = 0;
+      this.touchY = 0;
+      this.player.vx = 0;
+      this.player.vy = 0;
+    }
+    syncPresentationPause(paused, [
+      {
+        pause: () => { this.anims.pauseAll(); },
+        resume: () => { this.anims.resumeAll(); },
+      },
+      {
+        pause: () => { this.tweens.pauseAll(); },
+        resume: () => { this.tweens.resumeAll(); },
+      },
+      {
+        pause: () => { this.sound.pauseAll(); },
+        resume: () => { this.sound.resumeAll(); },
+      },
+    ]);
+
+    this.audioPaused = paused && pauseRawAudio;
+    if (paused) this.stopActiveTones();
+    this.syncAudioContextState();
+  }
+
+  private syncAudioContextState(): void {
+    const context = this.audioContext;
+    if (!context || context.state === 'closed') return;
+    const operation = this.audioPaused ? context.suspend() : context.resume();
+    void operation
+      .then(() => {
+        if (context !== this.audioContext || context.state === 'closed') return;
+        if (this.audioPaused && context.state === 'running') void context.suspend().catch(() => undefined);
+        if (!this.audioPaused && context.state === 'suspended') void context.resume().catch(() => undefined);
+      })
+      .catch(() => undefined);
+  }
+
+  private stopActiveTones(): void {
+    for (const [oscillator, gain] of this.activeTones) {
+      try {
+        oscillator.stop();
+      } catch {
+        // The tone may already have reached its scheduled stop time.
+      }
+      oscillator.disconnect();
+      gain.disconnect();
+    }
+    this.activeTones.clear();
+  }
+
   private tone(frequency: number, duration: number): void {
-    if (!this.options.preferences.soundEnabled || typeof AudioContext === 'undefined') return;
+    if (
+      !this.options.preferences.soundEnabled
+      || this.audioPaused
+      || typeof AudioContext === 'undefined'
+    ) return;
     try {
       this.audioContext ??= new AudioContext();
       const oscillator = this.audioContext.createOscillator();
@@ -1336,6 +1410,13 @@ export class SurvivorScene extends Phaser.Scene {
       gain.gain.setValueAtTime(0.022, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       oscillator.connect(gain).connect(this.audioContext.destination);
+      this.activeTones.set(oscillator, gain);
+      oscillator.addEventListener('ended', () => {
+        if (!this.activeTones.has(oscillator)) return;
+        this.activeTones.delete(oscillator);
+        oscillator.disconnect();
+        gain.disconnect();
+      }, { once: true });
       oscillator.start(now);
       oscillator.stop(now + duration);
     } catch {
@@ -1349,6 +1430,7 @@ export class SurvivorScene extends Phaser.Scene {
     for (const zone of this.zones) if (zone.active) zone.visual.destroy();
     for (const pool of this.spritePools.values()) pool.destroy();
     this.spritePools.clear();
+    this.stopActiveTones();
     if (this.audioContext) void this.audioContext.close();
     this.audioContext = null;
   }

@@ -10,6 +10,7 @@ export interface ActiveGameScene {
   testGrantXp: (amount: number) => void;
   testDamagePlayer: (amount: number) => void;
   testSpawnEnemy: () => void;
+  testKillFinalBoss: () => void;
   testFinish: (victory: boolean) => void;
 }
 

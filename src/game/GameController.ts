@@ -46,6 +46,7 @@ class GameController {
       grantXp: (amount) => scene.testGrantXp(amount),
       damagePlayer: (amount) => scene.testDamagePlayer(amount),
       spawnEnemy: () => scene.testSpawnEnemy(),
+      testKillFinalBoss: () => scene.testKillFinalBoss(),
       finishRun: (victory) => scene.testFinish(victory),
     };
   }

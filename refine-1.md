@@ -21,7 +21,7 @@
 핵심 수정 사항은 다음과 같다.
 
 1. `package-lock.json`은 이미 존재하고 Git에 포함되어 있으므로 “lockfile 생성”은 작업 대상에서 제외한다.
-2. 현재 `npm run check`가 typecheck 단계에서 실패하므로 빌드·CI 게이트 복구가 실제 최우선 작업이다.
+2. 검토 당시 `npm run check`가 typecheck 단계에서 실패했으므로 빌드·CI 게이트 복구를 최우선으로 정했고, 현재 P0에서 해결했다.
 3. 문서 13절에서 확인한 게임 동작 결함이 15절 우선순위에서 누락되어 있다.
 4. `SurvivorScene` 분리는 필요하지만, 현재 동작을 고정하는 회귀 테스트보다 먼저 진행하면 위험하다.
 5. 에셋 수정·최적화·manifest·라이선스 추적은 하나의 에셋 작업군으로 묶는 편이 효율적이다.
@@ -38,6 +38,29 @@
 → 초기 로딩과 프레임 일관성 개선
 ```
 
+### P0 반영 결과 — 2026-07-30
+
+이 문서의 P0 범위는 현재 코드에 반영되었다.
+
+| P0 항목 | 반영 내용 | 상태 |
+| --- | --- | --- |
+| 빌드 게이트 복구 | `SurvivorScene.update()`의 strict override 오류 수정 | 완료 |
+| 단일 릴리스 게이트 | typecheck → unit → production build → preview E2E 순서의 `npm run check` 구성 | 완료 |
+| CI | 고정 Node/npm, `npm ci`, Playwright Chromium, 전체 게이트를 실행하는 GitHub Actions 추가 | 완료 |
+| production E2E | Vite dev server 대신 `dist`를 제공하는 `vite preview` 대상으로 전환 | 완료 |
+| 게임 동작 결함 | 공격 방향, 오버킬 통계, 공간 해시 분리 순서, 최종 보스 보상, 완전한 프레젠테이션 정지 처리 | 완료 |
+| 브라우저 회귀 | 실제 피해 패배, 최종 보스 처치 승리, 결과 UI, IndexedDB run/profile 저장 검증 | 완료 |
+| 모바일 회귀 | 실제 touch start/move/end, Scene 입력 벡터, 조이스틱 초기화, 터치 일시정지 검증 | 완료 |
+
+현재 통합 검증 결과:
+
+- `npm ci`: 통과
+- typecheck: 통과
+- Vitest: 14파일, 29개 테스트 통과
+- production bundle: 통과
+- Playwright: 5개 통과, 데스크톱 프로젝트의 모바일 전용 테스트 1개 의도적 제외
+- `npm run check`: 통과
+
 ---
 
 ## 3. 현재 검증 상태
@@ -45,19 +68,19 @@
 ### 빌드와 테스트
 
 - `package-lock.json`은 lockfile v3이며 현재 Git에 추적되어 있다.
-- `npm test`는 단위 테스트 11파일, 23개 테스트를 모두 통과한다.
-- `npm run check`는 `src/game/scenes/SurvivorScene.ts`의 `update()`에 `override`가 없어 `TS4114`로 실패한다.
+- `npm test`는 단위 테스트 14파일, 29개 테스트를 모두 통과한다.
+- `src/game/scenes/SurvivorScene.ts`의 `update()`에 `override`를 적용해 기존 `TS4114`를 해소했다.
 - `tsconfig.app.json`은 `noImplicitOverride: true`를 사용한다.
-- typecheck가 프로덕션 build 명령에 포함되어 있으므로 현재 공식 `npm run build`도 통과할 수 없다.
-- 직접 Vite 번들링한 결과 초기 JavaScript가 단일 파일 약 1,695.78KB, gzip 약 462.05KB였다.
-- Playwright E2E는 현재 환경에 브라우저 실행 파일이 없어 앱 실행 전에 중단되었다.
+- typecheck와 production build가 모두 통과한다.
+- 직접 Vite 번들링한 결과 초기 JavaScript가 단일 파일 약 1,698.09KB, gzip 약 462.79KB였다.
+- Playwright Chromium을 설치하고 production preview 기반 E2E를 실행해 5개가 통과했으며, 데스크톱 프로젝트의 모바일 전용 테스트 1개만 의도적으로 제외했다.
+- 전체 `npm run check`가 통과한다.
 
-### 검증 파이프라인의 공백
+### 검증 파이프라인의 남은 공백
 
-- `npm run check`에는 E2E가 포함되지 않는다.
-- Playwright는 production preview가 아니라 Vite dev server를 실행한다.
-- E2E는 메뉴·레벨업·일시정지·강제 패배·결과 화면만 확인한다.
-- 승리 경로, 자연스러운 단축 런, IndexedDB 저장 결과, 실제 모바일 pointer 입력은 검증하지 않는다.
+- `npm run check`와 Playwright production preview 검증은 구성됐지만, 실제 10분 전체 런의 soak/performance 검증은 아직 없다.
+- 승리와 패배는 실제 게임 내부 경로를 통과하지만 E2E 전용 단축 브리지를 사용하므로 10분 동안의 자연 발생 이벤트 전체를 대신하지는 않는다.
+- 기본 모바일 pointer 이동·해제·일시정지는 검증하지만 화면 회전과 장시간 백그라운드 복귀는 아직 자동화되지 않았다.
 - Vitest coverage 기본 범위가 `src/game/core/**`와 `src/game/systems/**`로 제한되어 `SurvivorScene`의 핵심 전투 로직을 포함하지 않는다.
 
 ---
@@ -67,7 +90,7 @@
 | 기존 순위 | 기존 작업 | 판정 | 도입 결정 |
 | --- | --- | --- | --- |
 | 1 | `package-lock.json` 생성 및 CI에서 `npm ci` | 부분 타당 | lockfile 생성은 제외하고 CI 부분을 2번과 통합한다. |
-| 2 | 클린 환경 전체 검증 | 최우선 | 현재 실제 릴리스 게이트가 실패하므로 P0으로 도입한다. |
+| 2 | 클린 환경 전체 검증 | 최우선 | 검토 당시 실패하던 릴리스 게이트를 P0에서 복구하고 자동화했다. |
 | 3 | `play.png`, `potion.png` 수정 | 타당 | 실제 화면 품질과 파일 규약 문제이므로 에셋 작업군에 포함한다. |
 | 4 | `dirt-red` 축소·압축, 불필요 preload 제거 | 타당 | 모바일 전송량과 GPU 메모리에 직접 효과가 있어 도입한다. |
 | 5 | Phaser 런 시작 시 동적 import | 타당 | 초기 번들 측정 근거가 있으나 correctness 작업 뒤에 배치한다. |
@@ -81,9 +104,9 @@
 
 ## 5. 기존 우선순위에서 누락된 작업
 
-### 5.1 현재 빌드 게이트 실패
+### 5.1 검토 당시 빌드 게이트 실패
 
-`SurvivorScene.update()`의 `override` 누락으로 strict typecheck가 실패한다. 새로운 기능이나 리팩터링보다 먼저 해결해야 한다.
+`SurvivorScene.update()`의 `override` 누락으로 strict typecheck가 실패했다. P0 적용으로 해당 오류를 수정하고 전체 게이트 통과를 확인했다.
 
 ### 5.2 알려진 게임 동작 결함
 
@@ -115,7 +138,7 @@
 
 ## 6. 실제 도입 계획
 
-### P0 — 즉시 도입
+### P0 — 반영 완료
 
 #### 6.1 빌드·CI 게이트 정상화
 
@@ -334,8 +357,8 @@ SurvivorScene
 
 | 실제 순위 | 작업군 | 상태 |
 | --- | --- | --- |
-| 1 | typecheck 오류 수정과 클린 CI/production preview E2E | 즉시 도입 |
-| 2 | 핵심 Scene 회귀 테스트와 알려진 게임 결함 수정 | 즉시 도입 |
+| 1 | typecheck 오류 수정과 클린 CI/production preview E2E | P0 반영 완료 |
+| 2 | 핵심 Scene 회귀 테스트와 알려진 게임 결함 수정 | P0 반영 완료 |
 | 3 | Dexie transaction과 설정 저장 오류 처리 | 다음 배치 |
 | 4 | 에셋 수정·최적화·manifest 통합 | 다음 배치 |
 | 5 | 테스트를 유지한 `SurvivorScene` 점진 분리 | 다음 배치 |
