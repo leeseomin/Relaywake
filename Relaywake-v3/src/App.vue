@@ -172,7 +172,7 @@ function showToast(message: string): void {
 <template>
   <main class="app-root">
     <div v-if="booting" class="boot-screen" aria-live="polite">
-      <div class="boot-mark">C2</div>
+      <div class="boot-mark">SF</div>
       <p>Loading local profile…</p>
     </div>
 

@@ -43,10 +43,10 @@ export interface StoredGameData {
 
 export async function openIsolatedApp(page: Page): Promise<void> {
   await page.goto('/?e2e=1');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('C2');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Signalfall');
   await clearGameDatabase(page);
   await page.reload();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('C2');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Signalfall');
 
   const initial = await readStoredGameData(page);
   expect(initial.runs).toEqual([]);

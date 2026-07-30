@@ -2,8 +2,7 @@ export type Locale = 'ko' | 'en';
 
 export const messages = {
   ko: {
-    title: 'C2 · 나이트폴 프로토콜',
-    subtitle: '원본 Unity 생존 액션을 Phaser 4로 재구성한 웹 버전',
+    title: 'Signalfall',
     start: '작전 시작',
     continue: '이어하기',
     settings: '설정',
@@ -45,8 +44,7 @@ export const messages = {
     profileReset: '저장 데이터를 초기화했습니다.',
   },
   en: {
-    title: 'C2 · Nightfall Protocol',
-    subtitle: 'A Phaser 4 reconstruction of the original Unity survival-action project',
+    title: 'Signalfall',
     start: 'Start Operation',
     continue: 'Continue',
     settings: 'Settings',

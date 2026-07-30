@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>천적도감 · 몽글이 마주치는 것들</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pit:#090c13;
+    --slab:#141a26;
+    --slab2:#1c2534;
+    --edge:#2c384b;
+    --edge-hi:#46587a;
+    --bone:#e9e3d2;
+    --dim:#8a94a9;
+    --rust:#d9532c;
+    --ochre:#e2a33a;
+    --lichen:#93d266;
+    --pixel:"Press Start 2P",monospace;
+    --disp:"Black Han Sans","Apple SD Gothic Neo",sans-serif;
+    --sans:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--pit);
+    background-image:
+      radial-gradient(circle at 85% 4%, rgba(217,83,44,.10), transparent 42%),
+      radial-gradient(circle at 8% 96%, rgba(147,210,102,.07), transparent 44%);
+    color:var(--bone);
+    font-family:var(--sans);
+    line-height:1.6;
+    min-height:100vh;
+    padding:26px 16px 60px;
+  }
+  .wrap{max-width:1040px;margin:0 auto}
+
+  /* ---------- 머리말 ---------- */
+  header{
+    border-bottom:3px solid var(--edge);
+    padding-bottom:16px;margin-bottom:20px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  }
+  .eyebrow{
+    font-family:var(--pixel);font-size:9px;letter-spacing:.14em;
+    color:var(--rust);margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--disp);font-size:clamp(34px,7vw,58px);
+    margin:0;letter-spacing:.02em;line-height:.98;
+  }
+  h1 em{font-style:normal;color:var(--ochre)}
+  .lede{color:var(--dim);margin:10px 0 0;max-width:50ch;font-size:14px}
+  .stamp{
+    font-family:var(--pixel);font-size:8px;color:var(--dim);
+    border:2px solid var(--edge);padding:8px 10px;line-height:1.9;white-space:nowrap;
+  }
+  .stamp b{color:var(--lichen);font-weight:400}
+
+  /* ---------- 판 ---------- */
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) 322px;gap:16px;align-items:start}
+  @media (max-width:880px){.stage{grid-template-columns:1fr}}
+  .panel{
+    background:var(--slab);
+    border:3px solid var(--edge);
+    box-shadow:6px 6px 0 rgba(0,0,0,.6);
+    padding:16px;
+  }
+  .panel > h2{
+    font-family:var(--pixel);font-size:9px;letter-spacing:.12em;color:var(--rust);
+    margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  }
+  .panel > h2 span{color:var(--dim);font-size:8px}
+
+  /* ---------- 격리 상자 ---------- */
+  .viewer{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .box{position:relative;padding:12px;background:#05070c;border:3px solid var(--edge-hi);line-height:0}
+  .box::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(to bottom, rgba(0,0,0,.28) 0 2px, transparent 2px 4px);
+    mix-blend-mode:multiply;
+  }
+  .box i{position:absolute;width:13px;height:13px;border:3px solid var(--ochre)}
+  .box i:nth-child(1){top:-3px;left:-3px;border-right:0;border-bottom:0}
+  .box i:nth-child(2){top:-3px;right:-3px;border-left:0;border-bottom:0}
+  .box i:nth-child(3){bottom:-3px;left:-3px;border-right:0;border-top:0}
+  .box i:nth-child(4){bottom:-3px;right:-3px;border-left:0;border-top:0}
+  #screen{width:min(384px,74vw);height:auto;display:block;image-rendering:pixelated}
+
+  .plate{text-align:center}
+  .plate .nm{font-family:var(--disp);font-size:36px;line-height:1.1;margin:0;letter-spacing:.02em}
+  .plate .sub{font-family:var(--pixel);font-size:8px;color:var(--dim);margin:8px 0 0;letter-spacing:.08em}
+  .badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .tag{
+    font-family:var(--pixel);font-size:8px;letter-spacing:.06em;
+    border:2px solid var(--edge-hi);padding:6px 8px;color:var(--bone);background:var(--slab2);
+  }
+  .tag.elem{border-color:var(--lichen);color:var(--lichen)}
+  .tag.rank-elite{border-color:var(--ochre);color:var(--ochre)}
+  .tag.rank-boss{border-color:var(--rust);color:#ffd9c9;background:#3a150c}
+  .threat{display:flex;align-items:center;gap:8px;font-family:var(--pixel);font-size:8px;color:var(--dim)}
+  .threat b{display:flex;gap:3px}
+  .threat b u{width:14px;height:11px;background:var(--slab2);border:2px solid var(--edge);text-decoration:none}
+  .threat b u.on{background:var(--rust);border-color:#8c2c12}
+
+  /* ---------- 조작 ---------- */
+  .btn{
+    font-family:inherit;font-size:14px;font-weight:700;color:var(--bone);
+    background:var(--slab2);border:2px solid var(--edge-hi);
+    padding:10px 12px;cursor:pointer;width:100%;
+    box-shadow:3px 3px 0 rgba(0,0,0,.55);
+    transition:transform .06s steps(2), box-shadow .06s steps(2), background .12s;
+  }
+  .btn:hover{background:#26334a}
+  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 rgba(0,0,0,.55)}
+  .btn:focus-visible{outline:3px solid var(--lichen);outline-offset:2px}
+  .btn.hot{
+    background:var(--rust);color:#fff3ee;border-color:#8c2c12;
+    box-shadow:3px 3px 0 #58180a;font-size:16px;padding:14px 12px;letter-spacing:.02em;
+  }
+  .btn.hot:hover{background:#e8663e}
+  .btn.hot:active{box-shadow:0 0 0 #58180a}
+  .btn.ghost{background:transparent}
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .field{margin-bottom:10px}
+  .field label{
+    display:block;font-family:var(--pixel);font-size:8px;letter-spacing:.08em;
+    color:var(--dim);margin-bottom:5px;
+  }
+  select{
+    width:100%;font-family:inherit;font-size:13px;color:var(--bone);
+    background:#10151f;border:2px solid var(--edge);padding:7px 8px;
+  }
+  select:focus{outline:2px solid var(--lichen);outline-offset:1px}
+  select:disabled{opacity:.42;cursor:not-allowed}
+  input[type=range]{width:100%;accent-color:var(--rust)}
+  .swatches{display:flex;gap:4px;margin-top:8px}
+  .swatches i{flex:1;height:20px;border:2px solid rgba(0,0,0,.5);display:block}
+  .toggles{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .toggles label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+  .toggles input{accent-color:var(--lichen);width:16px;height:16px}
+  .divider{height:3px;background:var(--edge);margin:16px -16px;opacity:.7}
+
+  /* ---------- 야장 데이터 ---------- */
+  .log{margin-top:16px}
+  .log-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px}
+  @media (max-width:760px){.log-grid{grid-template-columns:1fr}}
+  .stat{display:grid;grid-template-columns:44px 1fr 34px;align-items:center;gap:9px;margin-bottom:9px}
+  .stat span{font-size:12px;color:var(--dim)}
+  .stat .bar{height:13px;background:#10151f;border:2px solid var(--edge);position:relative}
+  .stat .bar u{
+    position:absolute;inset:0 auto 0 0;background:var(--lichen);
+    text-decoration:none;transition:width .18s steps(6);
+  }
+  .stat .bar.atk u{background:var(--rust)}
+  .stat .bar.def u{background:var(--edge-hi)}
+  .stat .bar.spd u{background:var(--ochre)}
+  .stat b{font-family:var(--pixel);font-size:9px;text-align:right}
+  .skills{list-style:none;padding:0;margin:0 0 14px}
+  .skills li{
+    border-left:3px solid var(--rust);padding:4px 0 4px 10px;margin-bottom:7px;font-size:14px;
+  }
+  .skills li em{font-style:normal;color:var(--dim);font-size:12px;display:block}
+  .note{font-size:13px;color:var(--dim);margin:0 0 6px}
+  .note b{color:var(--bone);font-weight:600}
+  .cycle{
+    display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;
+    font-family:var(--pixel);font-size:8px;color:var(--dim);
+  }
+  .cycle b{color:var(--bone);font-weight:400}
+  .cycle span{border:2px solid var(--edge);padding:6px 8px}
+
+  /* ---------- 무리 ---------- */
+  .pack{margin-top:16px}
+  .strip{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+  @media (max-width:700px){.strip{grid-template-columns:repeat(4,1fr)}}
+  .chip{
+    background:#10151f;border:2px solid var(--edge);padding:0;cursor:pointer;line-height:0;
+    transition:transform .08s steps(2),border-color .12s;position:relative;
+  }
+  .chip:hover{transform:translateY(-3px);border-color:var(--rust)}
+  .chip:focus-visible{outline:3px solid var(--lichen);outline-offset:2px}
+  .chip canvas{width:100%;height:auto;display:block;image-rendering:pixelated}
+  .chip.boss{border-color:var(--ochre)}
+
+  footer{margin-top:26px;color:var(--dim);font-size:13px}
+  kbd{
+    font-family:var(--pixel);font-size:9px;background:var(--slab2);
+    border:2px solid var(--edge);padding:3px 5px;color:var(--bone);
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">32 × 32 PX · FIELD LOG</p>
+      <h1>천적<em>도감</em></h1>
+      <p class="lede">몽글이 마주치는 것들을 여기서 뽑습니다. 굴릴 때마다 체형·속성·눈·입·팔이 새로 붙고 능력치와 기술도 같이 나옵니다.</p>
+    </div>
+    <div class="stamp" id="stamp">조우 <b>000</b><br>도감 등록 <b>000</b></div>
+  </header>
+
+  <div class="stage">
+
+    <section class="panel viewer">
+      <h2>SPECIMEN <span id="seedTag">SEED ------</span></h2>
+      <div class="box"><i></i><i></i><i></i><i></i><canvas id="screen" width="384" height="384" role="img" aria-label="생성된 몬스터 스프라이트"></canvas></div>
+      <div class="plate">
+        <p class="nm" id="mName">-</p>
+        <div class="badges" id="badges"></div>
+      </div>
+      <div class="threat">위협도 <b id="threat"></b></div>
+    </section>
+
+    <section class="panel">
+      <h2>ASSEMBLE</h2>
+      <button class="btn hot" id="roll">🐾 새로 조우</button>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="field"><label for="selElem">속성</label><select id="selElem"></select></div>
+        <div class="field"><label for="selRank">등급</label><select id="selRank"></select></div>
+        <div class="field"><label for="selBody">체형</label><select id="selBody" data-key="body"></select></div>
+        <div class="field"><label for="selEyes">눈</label><select id="selEyes" data-key="eyes"></select></div>
+        <div class="field"><label for="selMouth">입</label><select id="selMouth" data-key="mouth"></select></div>
+        <div class="field"><label for="selCrown">머리</label><select id="selCrown" data-key="crown"></select></div>
+        <div class="field"><label for="selArms">팔</label><select id="selArms" data-key="arms"></select></div>
+        <div class="field"><label for="selSkin">살갗</label><select id="selSkin" data-key="skin"></select></div>
+      </div>
+
+      <div class="field">
+        <label for="hue">몸 색</label>
+        <input type="range" id="hue" min="0" max="359" value="200">
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="field">
+        <label for="selBg">배경</label>
+        <select id="selBg">
+          <option value="cave">동굴 바닥</option>
+          <option value="moss">이끼밭</option>
+          <option value="grid">격자</option>
+          <option value="none">투명</option>
+        </select>
+      </div>
+
+      <div class="toggles">
+        <label><input type="checkbox" id="cbAura" checked> 기운</label>
+        <label><input type="checkbox" id="cbAnim" checked> 움직임</label>
+      </div>
+
+      <div class="divider"></div>
+      <h2>EXPORT</h2>
+      <div class="field">
+        <label for="scale">저장 크기</label>
+        <select id="scale">
+          <option value="1">32 px (원본)</option>
+          <option value="4" selected>128 px (×4)</option>
+          <option value="8">256 px (×8)</option>
+          <option value="12">384 px (×12)</option>
+        </select>
+      </div>
+      <div class="row">
+        <button class="btn" id="savePng">PNG 저장</button>
+        <button class="btn ghost" id="saveSheet">동작 시트</button>
+      </div>
+      <button class="btn" id="saveCard" style="margin-top:8px">도감 카드 저장</button>
+    </section>
+  </div>
+
+  <section class="panel log">
+    <h2>FIELD DATA <span id="dataSub"></span></h2>
+    <div class="log-grid">
+      <div>
+        <div id="stats"></div>
+        <div class="cycle" id="cycle"></div>
+      </div>
+      <div>
+        <ul class="skills" id="skills"></ul>
+        <p class="note" id="habitat"></p>
+        <p class="note" id="quirk"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel pack">
+    <h2>PACK <span>무리 8마리 · 눌러서 데려오기</span></h2>
+    <div class="strip" id="strip"></div>
+    <button class="btn ghost" id="reroll" style="margin-top:12px">무리 다시 뽑기</button>
+  </section>
+
+  <footer>
+    <kbd>SPACE</kbd> 새로 조우 · 저장하는 PNG는 배경이 투명하고, 동작 시트에는 6프레임이 나란히 들어갑니다.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= 몬스터 스프라이트 코어 (DOM 비의존) ================= */
+const GW = 32, GH = 32, CX = 16, PHASES = 6;
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const cl = (v,a,b)=>Math.max(a,Math.min(b,v));
+const hsl = (h,s,l)=>`hsl(${((h%360)+360)%360}, ${cl(s,0,100)}%, ${cl(l,0,100)}%)`;
+
+/* ---------- 속성: 상성 고리 순서 (앞이 뒤를 잡아먹는다) ---------- */
+const ELEM_ORDER = ["ember","bloom","stone","spark","iron","frost","venom","spirit","abyss"];
+const ELEM = {
+  ember : {ko:"잿불",   h:14,  s:62, gh:36,  gs:96, gl:60, aura:"rise", tag:"불티가 옷깃에 옮겨붙는다"},
+  bloom : {ko:"덩굴",   h:106, s:42, gh:330, gs:72, gl:70, aura:"rise", tag:"뿌리가 먼저 발목을 찾는다"},
+  stone : {ko:"돌더미", h:26,  s:18, gh:34,  gs:28, gl:56, aura:"fall", tag:"부서지고도 다시 뭉친다"},
+  spark : {ko:"우레",   h:232, s:34, gh:52,  gs:98, gl:64, aura:"bolt", tag:"닿기 전에 털이 곤두선다"},
+  iron  : {ko:"무쇠",   h:208, s:12, gh:12,  gs:84, gl:56, aura:"rise", tag:"관절마다 쇳소리가 난다"},
+  frost : {ko:"살얼음", h:196, s:46, gh:184, gs:76, gl:78, aura:"fall", tag:"숨을 쉬면 서리가 낀다"},
+  venom : {ko:"고름",   h:286, s:38, gh:94,  gs:76, gl:56, aura:"fall", tag:"닿은 자리가 물러진다"},
+  spirit: {ko:"넋",     h:264, s:34, gh:166, gs:66, gl:72, aura:"soul", tag:"이름을 부르면 돌아본다"},
+  abyss : {ko:"심연",   h:238, s:44, gh:292, gs:76, gl:66, aura:"fall", tag:"그림자가 한 박자 늦게 따라온다"}
+};
+
+/* ---------- 옵션 ---------- */
+const OPT = {
+  body   : ["blob","orb","hulk","wisp","shard","crawler","stack","maw","coil"],
+  eyes   : ["pair","single","triple","swarm","visor","hollow"],
+  mouth  : ["fang","grin","gape","tendril","stitch","none"],
+  crown  : ["none","horns","spikes","antler","halo","single","frill"],
+  arms   : ["none","claw","pincer","tendril","stub"],
+  skin   : ["plain","spots","stripes","cracks","scales","runes"],
+  rank   : ["common","elite","boss"]
+};
+const KO = {
+  body : {blob:"물컹이",orb:"부유구",hulk:"거구",wisp:"망령",shard:"결정체",crawler:"기어붙이",stack:"무더기",maw:"아귀",coil:"똬리"},
+  eyes : {pair:"두 눈",single:"외눈",triple:"세 눈",swarm:"떼눈",visor:"틈새눈",hollow:"빈 눈구멍"},
+  mouth: {fang:"송곳니",grin:"톱니 웃음",gape:"쩍벌 아가리",tendril:"촉수 주둥이",stitch:"꿰맨 입",none:"입 없음"},
+  crown: {none:"민머리",horns:"한 쌍 뿔",spikes:"가시관",antler:"가지뿔",halo:"고리불",single:"외뿔",frill:"목주름"},
+  arms : {none:"팔 없음",claw:"갈퀴손",pincer:"집게발",tendril:"촉수팔",stub:"뭉툭팔"},
+  skin : {plain:"민무늬",spots:"얼룩",stripes:"줄무늬",cracks:"갈라진 틈",scales:"비늘",runes:"새김 무늬"},
+  rank : {common:"잡몹",elite:"정예",boss:"우두머리"}
+};
+const LABEL = {body:"체형",eyes:"눈",mouth:"입",crown:"머리",arms:"팔",skin:"살갗"};
+const MAT = {bone:{ko:"뼈",h:44,s:24,l:80},chitin:{ko:"각질",h:20,s:36,l:42},iron:{ko:"쇠",h:212,s:10,l:66},glass:{ko:"수정",h:-1,s:0,l:0}};
+
+/* ---------- 이름 ---------- */
+const NAME_PRE = {
+  ember:["잿","불티","숯","화르"], bloom:["덩굴","이끼","씨눈","꽃샘"], stone:["돌","자갈","바위","모래"],
+  spark:["우레","지직","벼락","번뜩"], iron:["무쇠","톱니","나사","녹"], frost:["서리","살얼","눈보","고드"],
+  venom:["고름","늪","곰팡","진물"], spirit:["넋","그믐","흐릿","한숨"], abyss:["먹물","심연","아득","검은"]
+};
+const NAME_CORE = {
+  blob:["덩이","물컹","죽"], orb:["구슬","눈알","방울"], hulk:["주먹","덩치","등짝"], wisp:["자락","기척","연기"],
+  shard:["조각","서슬","가시"], crawler:["더듬","다리","기어"], stack:["무더기","탑","층"],
+  maw:["아귀","주둥","목구멍"], coil:["똬리","비늘","꼬리"]
+};
+const NAME_SUF = ["이","귀","치","보","깨비"];
+
+/* ---------- 스킬/설정 재료 ---------- */
+const SK_NOUN = {
+  ember:["잿불","불똥"], bloom:["가시덩굴","홀씨"], stone:["돌조각","모래바람"], spark:["방전","벼락"],
+  iron:["쇳가루","톱니"], frost:["서릿발","고드름"], venom:["독안개","진물"], spirit:["원혼","한기"], abyss:["먹구름","그믐"]
+};
+const SK_VERB = {
+  maw:"삼키기", claw:"할퀴기", pincer:"으스러뜨리기", tendril:"휘감기", spikes:"꿰뚫기",
+  eyes:"노려보기", aura:"흩뿌리기", body:"덮치기", stub:"내려찍기"
+};
+const HABITAT = {
+  ember:"불 꺼진 아궁이", bloom:"버려진 화단", stone:"무너진 돌담", spark:"낡은 전봇대 밑",
+  iron:"녹슨 공구함", frost:"성에 낀 창틀", venom:"곰팡이 핀 지하실", spirit:"닫아둔 옷장", abyss:"침대 밑"
+};
+const QUIRK = {
+  blob:"밟으면 두 마리가 된다", orb:"눈을 마주치면 따라온다", hulk:"느리지만 벽을 밀고 온다",
+  wisp:"문을 닫아도 들어온다", shard:"큰 소리를 지르면 금이 간다", crawler:"바닥보다 천장에 잘 붙는다",
+  stack:"무너뜨려도 다시 쌓인다", maw:"삼킨 것을 오래 기억한다", coil:"조용할수록 가까이 있다"
+};
+
+/* ---------- 스펙 ---------- */
+function makeSpec(seed, ov){
+  const r = mulberry32(seed);
+  const pick = a => a[Math.floor(r()*a.length)];
+  const el = pick(ELEM_ORDER);
+  const rk = r() < .1 ? "boss" : (r() < .3 ? "elite" : "common");
+  const sp = {
+    seed, elem: el, rank: rk,
+    body : pick(OPT.body),
+    eyes : pick(OPT.eyes),
+    mouth: pick(OPT.mouth),
+    crown: pick(OPT.crown),
+    arms : pick(OPT.arms),
+    skin : pick(OPT.skin),
+    mat  : pick(["bone","chitin","iron","glass"]),
+    hue  : (ELEM[el].h + Math.floor(r()*30) - 15 + 360) % 360,
+    sat  : cl(ELEM[el].s + Math.floor(r()*16) - 8, 6, 82),
+    aura : r() < .8
+  };
+  Object.assign(sp, ov || {});
+  const r2 = mulberry32(sp.seed ^ 0x5bd1);
+  const pk2 = a => a[Math.floor(r2()*a.length)];
+  sp.name = pk2(NAME_PRE[sp.elem]) + pk2(NAME_CORE[sp.body]) + (r2() < .45 ? pk2(NAME_SUF) : "");
+  return sp;
+}
+
+/* ---------- 팔레트 ---------- */
+function makePalette(sp){
+  const e = ELEM[sp.elem], h = sp.hue, s = sp.sat, m = MAT[sp.mat];
+  const acc = m.h < 0 ? {h:e.gh, s:cl(e.gs-30,0,100), l:cl(e.gl+6,0,100)} : {h:m.h, s:m.s, l:m.l};
+  return {
+    O: hsl(h, cl(s*.6,0,100), 7),
+    B: hsl(h, s, 42),
+    D: hsl(h, cl(s*1.05,0,100), 27),
+    L: hsl(h, cl(s*.85,0,100), 58),
+    A: hsl(acc.h, acc.s, acc.l),
+    C: hsl(acc.h, cl(acc.s+8,0,100), cl(acc.l-26,0,100)),
+    G: hsl(e.gh, e.gs, e.gl),
+    Y: hsl(e.gh, cl(e.gs-8,0,100), cl(e.gl-24,0,100)),
+    M: hsl((h + 348) % 360, cl(s*.9+16,0,100), 13),
+    W: "#f3efe0",
+    K: hsl(h, cl(s*.5,0,100), 6)
+  };
+}
+
+/* ---------- 그리드 도구 ---------- */
+const newGrid = () => Array.from({length:GH}, () => new Array(GW).fill(null));
+function P(g,x,y,c){ x=Math.round(x); y=Math.round(y); if(x>=0&&x<GW&&y>=0&&y<GH) g[y][x]=c; }
+function RECT(g,x0,y0,w,h,c){ for(let y=y0;y<y0+h;y++) for(let x=x0;x<x0+w;x++) P(g,x,y,c); }
+function ROW(g,x0,x1,y,c){ for(let x=Math.round(x0);x<=Math.round(x1);x++) P(g,x,y,c); }
+function COL(g,x,y0,y1,c){ for(let y=Math.round(y0);y<=Math.round(y1);y++) P(g,x,y,c); }
+function ELL(g,cx,cy,rx,ry,c,only){
+  const x0=Math.max(0,Math.floor(cx-rx-1)), x1=Math.min(GW-1,Math.ceil(cx+rx+1));
+  const y0=Math.max(0,Math.floor(cy-ry-1)), y1=Math.min(GH-1,Math.ceil(cy+ry+1));
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+    const dx=(x+.5-cx)/rx, dy=(y+.5-cy)/ry;
+    if(dx*dx+dy*dy<=1){ if(!only || only(g[y][x])) g[y][x]=c; }
+  }
+}
+const at = (g,x,y) => (x>=0&&x<GW&&y>=0&&y<GH) ? g[y][x] : null;
+const BODYC = v => v==="B"||v==="D"||v==="L";
+const SOLID = v => !!v && v!=="G" && v!=="Y";
+
+/* 가장자리 찾기: 세로줄 x에서 처음 만나는 몸통 픽셀 */
+function topY(g,x,def){
+  for(let y=0;y<GH;y++) if(BODYC(at(g,x,y))) return y;
+  return def == null ? 8 : def;
+}
+/* 가로줄 y에서 중앙으로부터 sg 방향 몸통 바깥 끝 */
+function edgeX(g,y,sg){
+  let x = CX;
+  if(!BODYC(at(g,x,y))){
+    let f = null;
+    for(let d=0;d<12;d++){ if(BODYC(at(g,CX+d*sg,y))){ f = CX+d*sg; break; } }
+    if(f === null) return null;
+    x = f;
+  }
+  while(BODYC(at(g,x+sg,y))) x += sg;
+  return x;
+}
+
+/* 몸통 음영: 아래는 어둡게, 왼쪽 위는 밝게 */
+function shade(g){
+  const cp = g.map(r=>r.slice());
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    if(cp[y][x] !== "B") continue;
+    if(!SOLID(at(cp,x,y+3)) || !SOLID(at(cp,x-1,y+2))) g[y][x] = "D";
+    else if(!SOLID(at(cp,x-2,y-2)) && !SOLID(at(cp,x-1,y-3))) g[y][x] = "L";
+  }
+}
+function outline(g){
+  const cp = g.map(r=>r.slice());
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    if(cp[y][x]) continue;
+    if(SOLID(at(cp,x,y-1))||SOLID(at(cp,x,y+1))||SOLID(at(cp,x-1,y))||SOLID(at(cp,x+1,y))) g[y][x]="O";
+  }
+}
+
+/* ================= 체형 ================= */
+function drawBody(g, sp, ph){
+  const s = Math.sin(ph/PHASES*Math.PI*2);
+  const up = s > .5 ? 1 : 0;
+  const fo = Math.round(s);
+  const B = "B";
+  let a;
+
+  switch(sp.body){
+    case "blob": {
+      ELL(g, CX, 21.4, 10, 8 - up*.4, B);
+      ELL(g, CX, 15.2 - up, 6.6, 5.6, B);
+      RECT(g, 6, 25, 20, 5, B);
+      ELL(g, 7, 27.6, 3.2, 2.6, B); ELL(g, 25, 27.6, 3.2, 2.6, B);
+      a = {faceY:15-up, my:19-up, fw:6.2, armY:21, floats:false};
+      break;
+    }
+    case "orb": {
+      const cy = 14 + fo;
+      ELL(g, CX, cy, 8, 7.6, B);
+      for(let i=0;i<3;i++){
+        const ang = ph/PHASES*Math.PI*2 + i*2.094;
+        const x = CX + Math.cos(ang)*11.5, y = cy + Math.sin(ang)*5.6;
+        P(g, x, y, "A"); P(g, x+1, y, "C");
+      }
+      a = {faceY:cy-1, my:cy+4, fw:6.4, armY:cy+3, floats:true};
+      break;
+    }
+    case "hulk": {
+      RECT(g, 9, 23, 6, 7, B); RECT(g, 17, 23, 6, 7, B);
+      ROW(g, 9, 14, 29, "D"); ROW(g, 17, 22, 29, "D");
+      ELL(g, CX, 19 - up, 9.6, 6.6, B);
+      ELL(g, CX-7, 14.2 - up, 3.8, 3.4, B);
+      ELL(g, CX+7, 14.2 - up, 3.8, 3.4, B);
+      ELL(g, CX, 11.2 - up, 5.6, 5.0, B);
+      a = {faceY:10-up, my:14-up, fw:5.4, armY:16-up, floats:false};
+      break;
+    }
+    case "wisp": {
+      const cy = 12 + fo;
+      ELL(g, CX, cy, 6.6, 6.0, B);
+      for(let y=cy+5; y<=27; y++){
+        const k = (y-cy)/(27-cy);
+        const w = Math.max(1.4, 6.2*(1-k*.82));
+        const off = Math.sin(y*.55 + ph*1.05) * (1.4 + k*2.2);
+        ROW(g, CX-w+off, CX+w-1+off, y, B);
+      }
+      for(let x=0;x<GW;x++){ if(BODYC(at(g,x,27)) && (x+ph)%2===0) g[27][x] = null; }
+      a = {faceY:cy-1, my:cy+3, fw:5.6, armY:cy+6, floats:true};
+      break;
+    }
+    case "shard": {
+      const top = 5 - up;
+      for(let y=top; y<=29; y++){
+        const k = (y-top)/(29-top);
+        const w = k < .5 ? .6 + k*19.4 : 10.3 - (k-.5)*12.6;
+        ROW(g, CX-w, CX+w-1, y, B);
+      }
+      for(let y=20;y<=28;y++){
+        const w = (28-y)*.42 + 1;
+        ROW(g, 4, 4+w, y, B); ROW(g, 27-w, 27, y, B);
+      }
+      for(let y=top+3;y<=27;y++){ P(g, CX-2, y, "L"); P(g, CX+2, y, "D"); }
+      a = {faceY:14, my:18, fw:5.4, armY:19, floats:false};
+      break;
+    }
+    case "crawler": {
+      ELL(g, CX, 18.4 - up, 10, 5.4, B);
+      ELL(g, CX, 14.6 - up, 6.8, 4.0, B);
+      [[-10,0],[-7,1],[-4,0],[4,1],[7,0],[10,1]].forEach(([dx,o])=>{
+        const bend = (ph+o) % 2, x = CX+dx, sg = Math.sign(dx);
+        COL(g, x, 20, 25-bend, "D");
+        COL(g, x+sg, 24-bend, 27-bend, "D");
+        P(g, x+sg*2, 27-bend, "K");
+      });
+      P(g, CX-7, 17-up, "A"); P(g, CX-8, 18-up, "A"); P(g, CX-8, 19-up, "C");
+      P(g, CX+6, 17-up, "A"); P(g, CX+7, 18-up, "A"); P(g, CX+7, 19-up, "C");
+      a = {faceY:14-up, my:17-up, fw:5.8, armY:18-up, floats:false};
+      break;
+    }
+    case "stack": {
+      RECT(g, 6, 25, 20, 5, B); ELL(g, CX, 25.6, 10, 3.6, B);
+      ELL(g, CX+1, 20.6, 7.8, 3.8, B);
+      ELL(g, CX-1, 14 - up, 6.6, 4.8, B);
+      for(let x=0;x<GW;x++){
+        if(BODYC(at(g,x,24))) g[24][x] = "D";
+        if(BODYC(at(g,x,18-up))) g[18-up][x] = "D";
+      }
+      a = {faceY:13-up, my:16-up, fw:5.8, armY:20, floats:false};
+      break;
+    }
+    case "maw": {
+      ELL(g, CX, 19.6 - up*.5, 10.6, 8.6, B);
+      RECT(g, 9, 27, 5, 3, B); RECT(g, 18, 27, 5, 3, B);
+      a = {faceY:13-up, my:21-up, fw:6.6, armY:19, floats:false, gape:true};
+      break;
+    }
+    case "coil": {
+      ELL(g, CX, 27, 10, 2.9, B);
+      ELL(g, CX-2, 23.6, 8.4, 2.8, B);
+      ELL(g, CX+2, 20.4, 6.6, 2.6, B);
+      for(let x=0;x<GW;x++){
+        if(BODYC(at(g,x,25))) g[25][x] = "D";
+        if(BODYC(at(g,x,22))) g[22][x] = "D";
+      }
+      for(let y=12;y<=20;y++){
+        const off = Math.sin((y-12)*.42 + ph*.5) * 2.3;
+        ROW(g, CX-2.4+off, CX+1.6+off, y, B);
+      }
+      const hx = CX + Math.sin(8*.42 + ph*.5)*2.3;
+      ELL(g, hx, 10.6 - up, 5.4, 4.4, B);
+      a = {faceY:10-up, my:13-up, fw:4.8, armY:17, floats:false, hx};
+      break;
+    }
+  }
+  if(a.hx == null) a.hx = CX;
+  a.up = up; a.fo = fo;
+  return a;
+}
+
+/* ================= 무늬 ================= */
+function drawSkin(g, sp, a){
+  const r = mulberry32(sp.seed ^ 0x2f7d);
+  switch(sp.skin){
+    case "spots":
+      for(let i=0;i<16;i++){
+        const x = 4 + Math.floor(r()*24), y = Math.round(a.my) + 1 + Math.floor(r()*11);
+        if(BODYC(at(g,x,y))){ P(g,x,y,"D"); if(BODYC(at(g,x+1,y))) P(g,x+1,y,"D"); }
+      }
+      break;
+    case "stripes":
+      for(let y=Math.round(a.my)+1;y<GH;y++) for(let x=0;x<GW;x++)
+        if(BODYC(at(g,x,y)) && ((x+y*2)>>1)%3===0) g[y][x]="D";
+      break;
+    case "cracks":
+      for(let i=0;i<3;i++){
+        let x = 8 + Math.floor(r()*16), y = Math.round(a.my) + 1;
+        for(let k=0;k<8;k++){
+          if(BODYC(at(g,x,y))) g[y][x] = k%3===1 ? "G" : "Y";
+          x += r()<.5 ? 1 : -1; y += 1;
+        }
+      }
+      break;
+    case "scales":
+      for(let y=Math.round(a.my)+2;y<GH;y+=3) for(let x=(y%2?1:3);x<GW;x+=4){
+        if(BODYC(at(g,x,y))){ P(g,x,y,"D"); if(BODYC(at(g,x+1,y)))P(g,x+1,y,"D");
+          if(BODYC(at(g,x-1,y+1)))P(g,x-1,y+1,"D"); if(BODYC(at(g,x+2,y+1)))P(g,x+2,y+1,"D"); }
+      }
+      break;
+    case "runes":
+      for(let i=0;i<5;i++){
+        const x = 6 + Math.floor(r()*20), y = Math.round(a.my) + 2 + Math.floor(r()*8);
+        if(BODYC(at(g,x,y)) && BODYC(at(g,x,y+1))){ P(g,x,y,"G"); P(g,x,y+1,"G"); if(BODYC(at(g,x+1,y+1)))P(g,x+1,y+1,"G"); }
+      }
+      break;
+  }
+}
+
+/* ================= 머리 장식 ================= */
+function drawCrown(g, sp, a){
+  if(sp.crown === "none") return;
+  const hx = Math.round(a.hx);
+  const t = topY(g, hx, Math.round(a.faceY) - 4);
+  switch(sp.crown){
+    case "horns":
+      [-1,1].forEach(sg=>{
+        const bx = hx + sg*4;
+        for(let i=0;i<3;i++){ P(g, bx + sg*i, t - i, "A"); P(g, bx + sg*i, t - i - 1, "A"); }
+        P(g, bx + sg*3, t - 4, "C");
+      });
+      break;
+    case "spikes":
+      for(let i=-2;i<=2;i++){
+        const x = hx + i*3, h = 4 - Math.abs(i);
+        const ty = topY(g, x, t);
+        COL(g, x, ty - h, ty - 1, "A"); P(g, x, ty - h, "C");
+      }
+      break;
+    case "antler":
+      [-1,1].forEach(sg=>{
+        for(let i=0;i<5;i++) P(g, hx + sg*(3+i), t - 1 - i, "A");
+        P(g, hx + sg*4, t - 4, "A"); P(g, hx + sg*4, t - 5, "A");
+        P(g, hx + sg*6, t - 5, "A"); P(g, hx + sg*6, t - 6, "A");
+        P(g, hx + sg*8, t - 6, "C");
+      });
+      break;
+    case "halo":
+      ROW(g, hx-4, hx+3, t-4, "G"); ROW(g, hx-4, hx+3, t-6, "Y");
+      P(g, hx-5, t-5, "G"); P(g, hx+4, t-5, "G");
+      break;
+    case "single":
+      COL(g, hx, t-6, t-1, "A"); COL(g, hx-1, t-4, t-1, "A"); COL(g, hx+1, t-3, t-1, "A");
+      P(g, hx, t-7, "C");
+      break;
+    case "frill": {
+      const y0 = Math.round(a.faceY) + 1;
+      for(let i=-2;i<=2;i++){
+        const x = hx + i*3;
+        const ty = topY(g, x, t);
+        COL(g, x, ty, ty + 2, "C"); COL(g, x+1, ty, ty + 1, "A");
+        void y0;
+      }
+      break;
+    }
+  }
+}
+
+/* ================= 팔 ================= */
+function drawArms(g, sp, a, ph){
+  if(sp.arms === "none") return;
+  const y = Math.round(a.armY);
+  [-1, 1].forEach(sg=>{
+    const ex = edgeX(g, y, sg);
+    if(ex === null) return;
+    const x = ex + sg;
+    const w = ph % 2;
+    switch(sp.arms){
+      case "claw":
+        P(g, x, y, "D"); P(g, x + sg, y, "D"); P(g, x + sg, y + 1, "D");
+        for(let i=0;i<3;i++){ P(g, x + sg*(1+ (i===1?1:0)), y + 2 + i - w, "A"); }
+        P(g, x + sg*2, y + 2 - w, "A"); P(g, x + sg*2, y + 3 - w, "A");
+        P(g, x, y + 2, "A");
+        break;
+      case "pincer":
+        P(g, x, y, "D"); P(g, x + sg, y, "D");
+        P(g, x + sg*2, y - 1 - w, "A"); P(g, x + sg*3, y - 2 - w, "A");
+        P(g, x + sg*2, y, "C");
+        P(g, x + sg*2, y + 1 + w, "A"); P(g, x + sg*3, y + 2 + w, "A");
+        break;
+      case "tendril": {
+        let cx2 = x, cy2 = y;
+        for(let i=0;i<7;i++){
+          P(g, cx2, cy2, i < 2 ? "D" : "C");
+          if(i < 3) cx2 += sg;
+          cy2 += (i < 2 ? 0 : 1) + (Math.sin(i*.9 + ph) > .4 ? 0 : 0);
+          if(i >= 3) cx2 += Math.sin(i*1.1 + ph*.9) > 0 ? sg : -sg;
+        }
+        break;
+      }
+      case "stub":
+        RECT(g, sg < 0 ? x - 2 : x, y - 1 - w, 3, 3, "D");
+        P(g, sg < 0 ? x - 2 : x + 2, y + 1 - w, "K");
+        break;
+    }
+  });
+}
+
+/* ================= 얼굴 ================= */
+function drawFace(g, sp, a, blink){
+  const cx = Math.round(a.hx), ey = Math.round(a.faceY);
+  const wide = a.fw >= 5.6;
+  const off = wide ? 5 : 4, ew = wide ? 4 : 3;
+
+  if(blink){
+    ROW(g, cx-off, cx-off+ew-1, ey, "K");
+    ROW(g, cx+off-ew+1, cx+off, ey, "K");
+  } else {
+    switch(sp.eyes){
+      case "single":
+        ELL(g, cx, ey, 3.8, 3.4, "G");
+        ELL(g, cx, ey+.4, 1.9, 2.0, "K");
+        P(g, cx-2, ey-2, "W");
+        break;
+      case "triple":
+        [[cx-off+1, ey+1],[cx+off-1, ey+1],[cx, ey-3]].forEach(([x,yy])=>{
+          RECT(g, x-1, yy-1, 3, 3, "G"); RECT(g, x, yy, 1, 2, "K");
+        });
+        break;
+      case "swarm": {
+        const r = mulberry32(sp.seed ^ 0x77);
+        for(let i=0;i<6;i++){
+          const x = cx - off + Math.floor(r()*(off*2 - 1)), yy = ey - 2 + Math.floor(r()*5);
+          RECT(g, x, yy, 2, 2, "G"); P(g, x + (i%2), yy, "K");
+        }
+        break;
+      }
+      case "visor":
+        ROW(g, cx-off-1, cx+off, ey-1, "K");
+        ROW(g, cx-off, cx+off-1, ey, "G");
+        ROW(g, cx-off, cx+off-1, ey+1, "K");
+        P(g, cx-off, ey, "W"); P(g, cx+off-2, ey, "Y");
+        break;
+      case "hollow":
+        RECT(g, cx-off, ey-2, ew, 4, "K"); RECT(g, cx+off-ew+1, ey-2, ew, 4, "K");
+        P(g, cx-off+1, ey, "G"); P(g, cx+off-1, ey, "G");
+        P(g, cx-off+1, ey+1, "Y"); P(g, cx+off-1, ey+1, "Y");
+        break;
+      default:
+        RECT(g, cx-off, ey-1, ew, ew, "G"); RECT(g, cx+off-ew+1, ey-1, ew, ew, "G");
+        RECT(g, cx-off+ew-2, ey, 2, 2, "K"); RECT(g, cx+off-ew+1, ey, 2, 2, "K");
+        P(g, cx-off, ey-1, "W"); P(g, cx+off, ey-1, "W");
+    }
+    if(sp.eyes === "pair" || sp.eyes === "hollow" || sp.eyes === "triple"){
+      P(g, cx-off-1, ey-3, "K"); P(g, cx-off, ey-3, "K"); P(g, cx-off+1, ey-2, "K");
+      P(g, cx+off+1, ey-3, "K"); P(g, cx+off, ey-3, "K"); P(g, cx+off-1, ey-2, "K");
+    }
+  }
+
+  const my = Math.round(a.my);
+  const mouth = a.gape ? "gape" : sp.mouth;
+  const mw = Math.round(a.fw) - 1;
+  switch(mouth){
+    case "fang":
+      ROW(g, cx-mw+1, cx+mw-2, my, "M");
+      P(g, cx-mw+1, my+1, "W"); P(g, cx+mw-2, my+1, "W");
+      break;
+    case "grin":
+      ROW(g, cx-mw, cx+mw-1, my, "M"); ROW(g, cx-mw+1, cx+mw-2, my+1, "M");
+      for(let x=cx-mw; x<=cx+mw-1; x+=2){ P(g, x, my, "W"); }
+      for(let x=cx-mw+2; x<=cx+mw-3; x+=2){ P(g, x, my+1, "W"); }
+      break;
+    case "gape": {
+      const w = a.gape ? 8 : 4.2, h = a.gape ? 5 : 3;
+      ELL(g, cx, my, w, h, "M");
+      for(let x=Math.round(cx-w+1); x<=cx+w-1; x+=2){
+        for(let d=0;d<3;d++) if(at(g,x,my-h+1+d)==="M" && d < (a.gape?2:1)) P(g, x, my-h+1+d, "W");
+        for(let d=0;d<2;d++) if(at(g,x+1,my+h-1-d)==="M" && d < (a.gape?1:1)) P(g, x+1, my+h-1-d, "W");
+      }
+      break;
+    }
+    case "tendril":
+      ELL(g, cx, my, 2.4, 2.0, "M");
+      [-2,0,2].forEach((d,i)=>{ COL(g, cx+d, my+1, my+3+(i%2), "C"); });
+      break;
+    case "stitch":
+      ROW(g, cx-mw, cx+mw-1, my, "M");
+      for(let x=cx-mw+1; x<=cx+mw-2; x+=2){ P(g, x, my-1, "A"); P(g, x, my+1, "A"); }
+      break;
+  }
+}
+
+/* ================= 기운 ================= */
+function drawAura(g, sp, ph){
+  const kind = ELEM[sp.elem].aura;
+  const r = mulberry32(sp.seed ^ 0x1234);
+  const n = sp.rank === "boss" ? 10 : sp.rank === "elite" ? 7 : 5;
+  /* 실루엣 주변에만 뿌린다 */
+  let x0=GW, x1=0, y0=GH, y1=0;
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++) if(BODYC(g[y][x])){
+    if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+  }
+  if(x1 < x0) return;
+  x0=Math.max(0,x0-3); x1=Math.min(GW-1,x1+3);
+  y0=Math.max(0,y0-4); y1=Math.min(GH-1,y1+2);
+  const span = y1 - y0 + 1;
+  const put = (x,y,c)=>{ if(x>=x0&&x<=x1&&y>=y0&&y<=y1&&!at(g,x,y)) P(g,x,y,c); };
+  for(let i=0;i<n;i++){
+    const x = x0 + Math.floor(r()*(x1-x0+1)), base = Math.floor(r()*span);
+    const y = y0 + (kind === "rise" ? (base - ph*2 + span*3) % span
+            : kind === "fall" ? (base + ph*2) % span
+            : kind === "soul" ? (base - ph + span*2) % span
+            : (base + (ph % 2) * 2) % span);
+    if(kind === "bolt"){ put(x,y,"G"); put(x+1,y+1,"G"); put(x,y+2,"G"); }
+    else if(kind === "soul"){ put(x,y,"G"); put(x,y+1,"Y"); }
+    else { put(x, y, r() < .35 ? "Y" : "G"); }
+  }
+}
+
+/* ================= 등급 표식 ================= */
+function drawRank(g, sp, a){
+  if(sp.rank === "common") return;
+  const cx = Math.round(a.hx);
+  const sy = Math.round(a.my) + 4;
+  if(BODYC(at(g,cx,sy))){
+    P(g,cx,sy,"G"); P(g,cx-1,sy+1,"G"); P(g,cx+1,sy+1,"G"); P(g,cx,sy+2,"G");
+    P(g,cx,sy+1,"Y");
+  }
+  if(sp.rank !== "boss") return;
+  for(let i=-3;i<=3;i++){
+    const x = CX + i*3;
+    const ty = topY(g, x, -1);
+    if(ty < 0) continue;
+    const h = 2 + (Math.abs(i) % 2 ? 0 : 1);
+    for(let k=1;k<=h;k++) P(g, x, ty - k, "A");
+    P(g, x, ty - h, "C");
+  }
+}
+
+/* ================= 조립 ================= */
+function buildGrid(sp, opt){
+  opt = opt || {};
+  const ph = opt.ph || 0, blink = !!opt.blink;
+  const g = newGrid();
+  const a = drawBody(g, sp, ph);
+  shade(g);
+  drawSkin(g, sp, a);
+  drawRank(g, sp, a);
+  drawArms(g, sp, a, ph);
+  drawCrown(g, sp, a);
+  drawFace(g, sp, a, blink);
+  if(sp.aura !== false) drawAura(g, sp, ph);
+  outline(g);
+  return g;
+}
+
+/* ================= 능력치 ================= */
+const BASE = {
+  blob:{hp:78,atk:36,def:52,spd:26}, orb:{hp:52,atk:58,def:34,spd:62},
+  hulk:{hp:92,atk:74,def:70,spd:18}, wisp:{hp:44,atk:52,def:24,spd:78},
+  shard:{hp:64,atk:66,def:80,spd:30}, crawler:{hp:58,atk:60,def:44,spd:72},
+  stack:{hp:86,atk:44,def:74,spd:22}, maw:{hp:74,atk:86,def:38,spd:40},
+  coil:{hp:62,atk:70,def:46,spd:58}
+};
+const RANK_MUL = {common:1, elite:1.28, boss:1.62};
+function makeStats(sp){
+  const r = mulberry32(sp.seed ^ 0xa17e);
+  const b = BASE[sp.body], m = RANK_MUL[sp.rank];
+  const bump = {hp:0,atk:0,def:0,spd:0};
+  if(sp.arms === "claw" || sp.arms === "pincer") bump.atk += 8;
+  if(sp.crown === "spikes" || sp.crown === "single") bump.atk += 6;
+  if(sp.skin === "scales" || sp.skin === "cracks") bump.def += 7;
+  if(sp.eyes === "swarm" || sp.eyes === "visor") bump.spd += 6;
+  if(sp.mouth === "gape" || sp.body === "maw") bump.atk += 5;
+  if(sp.crown === "halo") bump.hp += 8;
+  const mk = k => cl(Math.round((b[k] + bump[k] + (r()*14 - 7)) * m), 5, 130);
+  const st = {hp:mk("hp"), atk:mk("atk"), def:mk("def"), spd:mk("spd")};
+  st.threat = cl(Math.ceil((st.hp*.5 + st.atk + st.def*.6 + st.spd*.4) / 62), 1, 5);
+  return st;
+}
+function elemMatch(el){
+  const i = ELEM_ORDER.indexOf(el), n = ELEM_ORDER.length;
+  return { strong: ELEM_ORDER[(i+1)%n], weak: ELEM_ORDER[(i+n-1)%n] };
+}
+function makeLore(sp){
+  const r = mulberry32(sp.seed ^ 0x3c9);
+  const pick = a => a[Math.floor(r()*a.length)];
+  const key = sp.arms === "tendril" ? "tendril" : sp.arms === "pincer" ? "pincer"
+            : sp.arms === "claw" ? "claw" : (sp.mouth === "gape" || sp.body === "maw") ? "maw"
+            : (sp.crown === "spikes" || sp.crown === "single") ? "spikes"
+            : sp.arms === "stub" ? "stub" : pick(["eyes","aura","body"]);
+  const n = SK_NOUN[sp.elem];
+  const sk = [`${n[0]} ${SK_VERB[key]}`, `${n[1]} ${SK_VERB[pick(["eyes","aura","body"])]}`];
+  if(sp.rank === "boss") sk.push(`${KO.body[sp.body]}의 마지막 숨`);
+  return {
+    skills: [...new Set(sk)],
+    habitat: HABITAT[sp.elem],
+    quirk: QUIRK[sp.body],
+    tag: ELEM[sp.elem].tag
+  };
+}
+
+/* ================= 화면 ================= */
+const screen = document.getElementById("screen");
+const sctx = screen.getContext("2d");
+sctx.imageSmoothingEnabled = false;
+const SC = screen.width / GW;
+
+const bgCanvas = document.createElement("canvas");
+bgCanvas.width = screen.width; bgCanvas.height = screen.height;
+const bctx = bgCanvas.getContext("2d");
+bctx.imageSmoothingEnabled = false;
+
+let seed = Math.floor(Math.random()*1e6);
+let overrides = {};
+let spec, pal, stats, lore, frames, met = 0;
+const seen = new Set();
+
+function rebuild(){
+  spec  = makeSpec(seed, overrides);
+  pal   = makePalette(spec);
+  stats = makeStats(spec);
+  lore  = makeLore(spec);
+  frames = [];
+  for(let p=0;p<PHASES;p++) frames.push(buildGrid(spec, {ph:p}));
+  frames.blink = buildGrid(spec, {ph:0, blink:true});
+  paintBg();
+  syncUI();
+}
+
+/* ---------- 배경 ---------- */
+function paintBg(){
+  const mode = document.getElementById("selBg").value;
+  bctx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  if(mode === "none") return;
+  const r = mulberry32(seed ^ 0x9e37);
+  if(mode === "grid"){
+    for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+      bctx.fillStyle = ((x>>1)+(y>>1))%2 ? "#131a27" : "#0e131d";
+      bctx.fillRect(x*SC,y*SC,SC,SC);
+    }
+  } else {
+    const h = mode === "moss" ? 104 : 232, s = mode === "moss" ? 20 : 14, l = mode === "moss" ? 20 : 15;
+    for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+      bctx.fillStyle = hsl(h + (r()-.5)*14, s, l + (r()-.5)*8 + (y>25 ? 3 : 0));
+      bctx.fillRect(x*SC,y*SC,SC,SC);
+    }
+    for(let i=0;i<9;i++){
+      const px = Math.floor(r()*GW), py = 4 + Math.floor(r()*26);
+      bctx.fillStyle = hsl(h - 6, s + 6, l + 9);
+      bctx.fillRect(px*SC, py*SC, SC*2, SC);
+      bctx.fillStyle = hsl(h - 6, s + 4, l - 4);
+      bctx.fillRect(px*SC, (py+1)*SC, SC*2, SC);
+    }
+    if(mode === "moss") for(let i=0;i<6;i++){
+      const px = Math.floor(r()*GW), py = 6 + Math.floor(r()*23);
+      bctx.fillStyle = hsl(112, 30, 28);
+      bctx.fillRect(px*SC, py*SC, SC, SC);
+      bctx.fillRect((px+1)*SC, (py-1)*SC, SC, SC);
+    }
+  }
+  /* 바닥 그림자 */
+  bctx.save(); bctx.globalAlpha = .3; bctx.fillStyle = "#000";
+  for(let x=0;x<GW;x++){
+    const dx = (x+.5-CX)/9.5;
+    if(dx*dx <= 1) bctx.fillRect(x*SC, 29*SC, SC, SC*2);
+  }
+  bctx.restore();
+}
+
+/* ---------- 그리기 ---------- */
+function paint(ctx, g, palette, s, ox, oy){
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    const k = g[y][x];
+    if(!k) continue;
+    ctx.fillStyle = palette[k];
+    ctx.fillRect(ox + x*s, oy + y*s, s, s);
+  }
+}
+
+/* ---------- 화면 갱신 ---------- */
+let animOn = true, last = 0, ph = 0, blinkAt = 9;
+function loop(now){
+  if(now - last > 130){
+    last = now;
+    if(animOn){ ph = (ph + 1) % PHASES; if(ph === 0) blinkAt = 2 + Math.floor(Math.random()*10); }
+    sctx.clearRect(0,0,screen.width,screen.height);
+    sctx.drawImage(bgCanvas, 0, 0);
+    const useBlink = animOn && blinkAt < PHASES && ph === blinkAt;
+    paint(sctx, useBlink ? frames.blink : frames[animOn ? ph : 0], pal, SC, 0, 0);
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 정보 갱신 ---------- */
+const $ = id => document.getElementById(id);
+function syncUI(){
+  $("mName").textContent = spec.name;
+  $("seedTag").textContent = "SEED " + String(spec.seed).padStart(6,"0");
+  const mt = elemMatch(spec.elem);
+  $("badges").innerHTML =
+    `<span class="tag elem">${ELEM[spec.elem].ko}</span>` +
+    `<span class="tag rank-${spec.rank}">${KO.rank[spec.rank]}</span>` +
+    `<span class="tag">${KO.body[spec.body]}</span>` +
+    `<span class="tag">${MAT[spec.mat].ko}</span>`;
+  $("threat").innerHTML = [0,1,2,3,4].map(i=>`<u class="${i<stats.threat?"on":""}"></u>`).join("");
+  $("dataSub").textContent = ELEM[spec.elem].tag;
+
+  const bars = [["체력","hp",""],["공격","atk","atk"],["방어","def","def"],["속도","spd","spd"]];
+  $("stats").innerHTML = bars.map(([ko,k,c])=>
+    `<div class="stat"><span>${ko}</span><div class="bar ${c}"><u style="width:${Math.round(stats[k]/130*100)}%"></u></div><b>${stats[k]}</b></div>`
+  ).join("");
+
+  $("cycle").innerHTML =
+    `<span>잡아먹는다 <b>${ELEM[mt.strong].ko}</b></span><span>당한다 <b>${ELEM[mt.weak].ko}</b></span>`;
+  $("skills").innerHTML = lore.skills.map((s,i)=>
+    `<li>${s}<em>${i === 0 ? "주력" : i === 1 ? "견제" : "궁지에 몰리면"}</em></li>`).join("");
+  $("habitat").innerHTML = `<b>서식</b> ${lore.habitat}`;
+  $("quirk").innerHTML = `<b>습성</b> ${lore.quirk}`;
+
+  $("hue").value = spec.hue;
+  $("cbAura").checked = spec.aura !== false;
+  $("selElem").value = ("elem" in overrides) ? overrides.elem : "__r";
+  $("selRank").value = ("rank" in overrides) ? overrides.rank : "__r";
+  ["body","eyes","mouth","crown","arms","skin"].forEach(k=>{
+    document.querySelector(`[data-key="${k}"]`).value = (k in overrides) ? overrides[k] : "__r";
+  });
+  $("swatches").innerHTML = ["B","D","L","A","G","O"].map(k=>`<i style="background:${pal[k]}"></i>`).join("");
+  $("stamp").innerHTML = `조우 <b>${String(met).padStart(3,"0")}</b><br>도감 등록 <b>${String(seen.size).padStart(3,"0")}</b>`;
+  $("selMouth").disabled = (spec.body === "maw");
+  $("selMouth").title = (spec.body === "maw") ? "아귀 체형은 쩍벌 아가리가 고정입니다" : "";
+  screen.setAttribute("aria-label",
+    `${spec.name}. ${ELEM[spec.elem].ko} 속성 ${KO.rank[spec.rank]}, ${KO.body[spec.body]} 체형, ${KO.eyes[spec.eyes]}, ${KO.crown[spec.crown]}.`);
+}
+
+/* ---------- 무리 ---------- */
+function fillStrip(){
+  const strip = $("strip");
+  strip.innerHTML = "";
+  for(let i=0;i<8;i++){
+    const s2 = Math.floor(Math.random()*1e6);
+    const sp = makeSpec(s2), pl = makePalette(sp);
+    const g = buildGrid(sp, {ph:0});
+    const btn = document.createElement("button");
+    btn.className = "chip" + (sp.rank === "boss" ? " boss" : "");
+    btn.type = "button";
+    btn.title = `${sp.name} · ${ELEM[sp.elem].ko} ${KO.rank[sp.rank]}`;
+    btn.setAttribute("aria-label", btn.title + " 데려오기");
+    const cv = document.createElement("canvas");
+    cv.width = GW*3; cv.height = GH*3;
+    const cc = cv.getContext("2d");
+    cc.imageSmoothingEnabled = false;
+    paint(cc, g, pl, 3, 0, 0);
+    btn.appendChild(cv);
+    btn.addEventListener("click", ()=>{ seed = s2; overrides = {}; track(); rebuild(); });
+    strip.appendChild(btn);
+  }
+}
+
+/* ---------- 저장 ---------- */
+function download(canvas, name){
+  const a = document.createElement("a");
+  a.download = name;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+}
+function exportSingle(){
+  const s = +$("scale").value;
+  const c = document.createElement("canvas");
+  c.width = GW*s; c.height = GH*s;
+  const x = c.getContext("2d"); x.imageSmoothingEnabled = false;
+  paint(x, frames[0], pal, s, 0, 0);
+  download(c, `${spec.name}_${spec.seed}.png`);
+}
+function exportSheet(){
+  const s = +$("scale").value;
+  const c = document.createElement("canvas");
+  c.width = GW*PHASES*s; c.height = GH*s;
+  const x = c.getContext("2d"); x.imageSmoothingEnabled = false;
+  for(let p=0;p<PHASES;p++) paint(x, frames[p], pal, s, GW*s*p, 0);
+  download(c, `${spec.name}_${spec.seed}_walk.png`);
+}
+
+/* 도감 카드 */
+function exportCard(){
+  const W = 360, H = 520, c = document.createElement("canvas");
+  c.width = W*2; c.height = H*2;
+  const x = c.getContext("2d");
+  x.scale(2,2); x.imageSmoothingEnabled = false;
+  const mt = elemMatch(spec.elem);
+
+  x.fillStyle = "#141a26"; x.fillRect(0,0,W,H);
+  x.fillStyle = "#090c13"; x.fillRect(0,0,W,6); x.fillRect(0,H-6,W,6);
+  x.strokeStyle = spec.rank === "boss" ? "#d9532c" : spec.rank === "elite" ? "#e2a33a" : "#2c384b";
+  x.lineWidth = 4; x.strokeRect(2,2,W-4,H-4);
+  /* 모서리 브래킷 */
+  x.strokeStyle = "#e2a33a"; x.lineWidth = 4;
+  [[10,10,1,1],[W-10,10,-1,1],[10,H-10,1,-1],[W-10,H-10,-1,-1]].forEach(([px,py,sx,sy])=>{
+    x.beginPath(); x.moveTo(px+sx*16,py); x.lineTo(px,py); x.lineTo(px,py+sy*16); x.stroke();
+  });
+
+  /* 표본 상자 */
+  const bx = 30, by = 46, bw = W-60, bh = 210;
+  x.fillStyle = "#05070c"; x.fillRect(bx,by,bw,bh);
+  x.fillStyle = "#111826";
+  for(let gy=0; gy<bh; gy+=12) for(let gx=0; gx<bw; gx+=12)
+    if(((gx/12)+(gy/12))%2===0) x.fillRect(bx+gx,by+gy,12,12);
+  const s = 6, ox = bx + (bw - GW*s)/2, oy = by + (bh - GH*s)/2;
+  x.save(); x.globalAlpha = .35; x.fillStyle = "#000";
+  x.fillRect(ox + 6*s, oy + 29*s, 20*s, s*2); x.restore();
+  paint(x, frames[0], pal, s, ox, oy);
+
+  /* 이름 */
+  x.fillStyle = "#e9e3d2";
+  x.font = '30px "Black Han Sans", sans-serif';
+  x.textBaseline = "alphabetic";
+  x.fillText(spec.name, 30, 296);
+  x.font = '9px "Press Start 2P", monospace';
+  x.fillStyle = "#8a94a9";
+  x.fillText("SEED " + String(spec.seed).padStart(6,"0"), 30, 314);
+
+  /* 배지 */
+  let tx = 30;
+  [[ELEM[spec.elem].ko, "#93d266"], [KO.rank[spec.rank], spec.rank === "boss" ? "#d9532c" : spec.rank === "elite" ? "#e2a33a" : "#8a94a9"], [KO.body[spec.body], "#8a94a9"]]
+  .forEach(([t,col])=>{
+    x.font = '13px "Pretendard", sans-serif';
+    const w = x.measureText(t).width + 16;
+    x.strokeStyle = col; x.lineWidth = 2; x.strokeRect(tx, 326, w, 24);
+    x.fillStyle = col; x.fillText(t, tx + 8, 343);
+    tx += w + 7;
+  });
+
+  /* 능력치 */
+  const bars = [["체력", stats.hp, "#93d266"],["공격", stats.atk, "#d9532c"],["방어", stats.def, "#46587a"],["속도", stats.spd, "#e2a33a"]];
+  bars.forEach(([ko,v,col],i)=>{
+    const y = 372 + i*22;
+    x.fillStyle = "#8a94a9"; x.font = '12px "Pretendard", sans-serif';
+    x.fillText(ko, 30, y + 10);
+    x.fillStyle = "#10151f"; x.fillRect(66, y, 200, 13);
+    x.fillStyle = col; x.fillRect(66, y, Math.round(200 * v/130), 13);
+    x.fillStyle = "#e9e3d2"; x.font = '9px "Press Start 2P", monospace';
+    x.fillText(String(v), 276, y + 11);
+  });
+
+  /* 기술 + 상성 */
+  x.fillStyle = "#e9e3d2"; x.font = '13px "Pretendard", sans-serif';
+  x.fillText("기술 · " + lore.skills.join(" / "), 30, 478);
+  x.fillStyle = "#8a94a9"; x.font = '12px "Pretendard", sans-serif';
+  x.fillText(`약점 ${ELEM[mt.weak].ko}  ·  먹잇감 ${ELEM[mt.strong].ko}  ·  ${lore.habitat}`, 30, 496);
+  x.fillStyle = "#d9532c"; x.font = '8px "Press Start 2P", monospace';
+  x.fillText("MONGLE BESTIARY", 30, 34);
+  x.fillStyle = "#8a94a9";
+  const th = "위협도 " + "■".repeat(stats.threat) + "□".repeat(5 - stats.threat);
+  x.font = '12px "Pretendard", sans-serif';
+  x.fillText(th, W - 30 - x.measureText(th).width, 34);
+
+  download(c, `${spec.name}_카드.png`);
+}
+
+/* ---------- 이벤트 ---------- */
+function fillSelect(el, list, koMap){
+  el.innerHTML = `<option value="__r">랜덤</option>` +
+    list.map(v=>`<option value="${v}">${koMap[v]}</option>`).join("");
+}
+["body","eyes","mouth","crown","arms","skin"].forEach(k=>{
+  const sel = document.querySelector(`[data-key="${k}"]`);
+  fillSelect(sel, OPT[k], KO[k]);
+  sel.addEventListener("change", ()=>{
+    if(sel.value === "__r") delete overrides[k]; else overrides[k] = sel.value;
+    rebuild();
+  });
+});
+(function(){
+  const se = $("selElem");
+  const koElem = {}; ELEM_ORDER.forEach(e=>koElem[e] = ELEM[e].ko);
+  fillSelect(se, ELEM_ORDER, koElem);
+  se.addEventListener("change", ()=>{
+    if(se.value === "__r"){ delete overrides.elem; delete overrides.hue; delete overrides.sat; }
+    else {
+      overrides.elem = se.value;
+      overrides.hue = (ELEM[se.value].h + 360) % 360;
+      overrides.sat = ELEM[se.value].s;
+    }
+    rebuild();
+  });
+  const sr = $("selRank");
+  fillSelect(sr, OPT.rank, KO.rank);
+  sr.addEventListener("change", ()=>{
+    if(sr.value === "__r") delete overrides.rank; else overrides.rank = sr.value;
+    rebuild();
+  });
+})();
+$("hue").addEventListener("input", e=>{ overrides.hue = +e.target.value; rebuild(); });
+$("cbAura").addEventListener("change", e=>{ overrides.aura = e.target.checked; rebuild(); });
+$("cbAnim").addEventListener("change", e=>{ animOn = e.target.checked; ph = 0; last = 0; });
+$("selBg").addEventListener("change", ()=>{ paintBg(); last = 0; });
+$("roll").addEventListener("click", newRoll);
+$("reroll").addEventListener("click", fillStrip);
+$("savePng").addEventListener("click", exportSingle);
+$("saveSheet").addEventListener("click", exportSheet);
+$("saveCard").addEventListener("click", exportCard);
+function track(){ met++; seen.add(seed); }
+function newRoll(){
+  seed = Math.floor(Math.random()*1e6);
+  overrides = {};
+  track();
+  rebuild();
+}
+window.addEventListener("keydown", e=>{
+  if(e.code === "Space" && !/INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName)){
+    e.preventDefault(); newRoll();
+  }
+});
+if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  animOn = false; $("cbAnim").checked = false;
+}
+
+track();
+rebuild();
+fillStrip();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

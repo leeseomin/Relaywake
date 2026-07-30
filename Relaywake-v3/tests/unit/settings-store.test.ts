@@ -15,6 +15,15 @@ describe('settings persistence', () => {
     vi.restoreAllMocks();
   });
 
+  it('defaults to English when no saved settings exist', async () => {
+    vi.spyOn(persistence, 'readSettings').mockResolvedValueOnce(undefined);
+    const store = useSettingsStore();
+
+    await store.hydrate();
+
+    expect(store.settings.locale).toBe('en');
+  });
+
   it('does not change memory state when persistence fails', async () => {
     const store = useSettingsStore();
     const before = JSON.parse(JSON.stringify(store.settings)) as Settings;

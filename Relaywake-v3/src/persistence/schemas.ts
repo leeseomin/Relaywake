@@ -50,7 +50,7 @@ export const defaultProfile = (): Profile => ProfileSchema.parse({
 
 export const defaultSettings = (): Settings => SettingsSchema.parse({
   id: 'main',
-  locale: 'ko',
+  locale: 'en',
   soundEnabled: true,
   screenShake: true,
   damageNumbers: true,

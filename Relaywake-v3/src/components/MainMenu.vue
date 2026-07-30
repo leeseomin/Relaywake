@@ -37,20 +37,16 @@ function statWidth(value: number, min: number, max: number): string {
     <div class="menu-noise" :style="menuNoiseStyle" aria-hidden="true"></div>
     <header class="menu-topbar">
       <div class="brand-lockup">
-        <span class="brand-index">C2 / WEB REBUILD</span>
+        <span class="brand-index">SIGNALFALL</span>
         <span class="brand-dot"></span>
       </div>
-      <button class="icon-button" type="button" aria-label="Settings" @click="emit('settings')">⚙</button>
+      <button class="icon-button menu-settings-button" type="button" aria-label="Settings" @click="emit('settings')">⚙</button>
     </header>
 
     <div class="hero-grid">
       <div class="hero-copy">
         <p class="eyebrow">SURVIVE · ADAPT · OUTLAST</p>
         <h1>{{ t(props.locale, 'title') }}</h1>
-        <p class="hero-subtitle">{{ t(props.locale, 'subtitle') }}</p>
-        <div class="system-badges" aria-label="Technology stack">
-          <span>PHASER 4.2</span><span>TYPESCRIPT STRICT</span><span>PINIA</span><span>DEXIE</span>
-        </div>
       </div>
       <div class="hero-orbit" aria-hidden="true">
         <div class="orbit-ring orbit-ring-a"></div>
@@ -128,10 +124,5 @@ function statWidth(value: number, min: number, max: number): string {
       </div>
     </section>
 
-    <footer class="menu-footer">
-      <span>LOCAL-FIRST · NO ACCOUNT</span>
-      <span>UNITY DATA → ZOD CONFIG</span>
-      <span>BUILD 3.0.0</span>
-    </footer>
   </section>
 </template>

@@ -11,6 +11,27 @@ test.beforeEach(async ({ page }) => {
   await openIsolatedApp(page);
 });
 
+test('shows the Signalfall brand in English without legacy project labels', async ({ page }) => {
+  await expect(page).toHaveTitle('Signalfall');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signalfall');
+  await expect(page.getByTestId('start-run')).toContainText('Start Operation');
+  await expect(page.getByRole('button', { name: 'Settings' })).toHaveCSS('font-size', '24px');
+
+  for (const removedText of [
+    'A Phaser 4 reconstruction of the original Unity survival-action project',
+    'WEB REBUILD',
+    'PHASER 4.2',
+    'TYPESCRIPT STRICT',
+    'PINIA',
+    'DEXIE',
+    'UNITY DATA → ZOD CONFIG',
+    'BUILD 3.0.0',
+    'LOCAL-FIRST · NO ACCOUNT',
+  ]) {
+    await expect(page.getByText(removedText, { exact: true })).toHaveCount(0);
+  }
+});
+
 test('selects Fire Master and starts with the orbiting fire core', async ({ page }) => {
   await page.getByTestId('character-fire').click();
   await expect(page.locator('.character-detail')).toContainText(/파이어 마스터|Fire Master/);
