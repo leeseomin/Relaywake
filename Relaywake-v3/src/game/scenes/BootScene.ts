@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { animationFrameRate } from '../animationConfig';
 import { phaserAssets } from '../assets';
 import { consumePendingRunOptions } from '../runtimeContext';
 
@@ -43,7 +44,7 @@ export class BootScene extends Phaser.Scene {
       this.anims.create({
         key: animation,
         frames: this.anims.generateFrameNumbers(texture, { start: 0, end: 3 }),
-        frameRate: texture.includes('boss') ? 5 : 7,
+        frameRate: animationFrameRate(texture),
         repeat: -1,
       });
     }
