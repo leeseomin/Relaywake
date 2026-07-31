@@ -28,6 +28,18 @@ near-black UI color (`#080b14`) during visual QA. The play triangle remained
 high contrast, and the potion remained identifiable as a single health item at
 its approximately 26px gameplay size.
 
+
+## Mongle character sheets
+
+The first four selectable operatives are project-derived 96×24 RGBA sheets.
+Each contains four 24×24 frames in an A/B/A/B sequence built from the attached
+Mongle maker's native two-frame walking export. Nearest-neighbor pixel geometry
+and transparent backgrounds are preserved. The upper 14 rows are identical
+across all four frames so the eyes, face, and head remain fixed; only the lower
+body keeps the restrained walk motion. No runtime scaling filter or large
+texture atlas is required. Fire Master remains the separate 192×48 sheet with
+four 48×48 frames.
+
 ## Runtime preload policy
 
 Only manifest entries with the `phaser` consumer are loaded into Phaser's
