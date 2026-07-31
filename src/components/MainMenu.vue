@@ -47,11 +47,6 @@ function statWidth(value: number, min: number, max: number): string {
         <p class="eyebrow">SURVIVE · ADAPT · OUTLAST</p>
         <h1>{{ t(props.locale, 'title') }}</h1>
       </div>
-      <div class="hero-orbit" aria-hidden="true">
-        <div class="orbit-ring orbit-ring-a"></div>
-        <div class="orbit-ring orbit-ring-b"></div>
-        <div class="orbit-core"></div>
-      </div>
       <button
         class="icon-button menu-settings-button hero-settings-button"
         type="button"

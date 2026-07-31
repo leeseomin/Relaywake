@@ -32,6 +32,7 @@ button:disabled{cursor:not-allowed;opacity:.45;transform:none!important;box-shad
 @media(max-width:700px){.boss-hud{grid-template-columns:minmax(82px,auto) minmax(48px,1fr) auto;gap:7px;padding-inline:9px}.boss-identity{min-width:82px;gap:5px}.boss-name{letter-spacing:.03em}.boss-direction{font-size:13px!important}}
 
 /* Loadout field-theme selection */
+.hero-grid{grid-template-columns:minmax(0,1fr)}
 .field-selector{margin:0 0 24px;padding-top:20px;border-top:1px solid var(--line)}
 .field-selector-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px}
 .field-selector-heading .detail-code{margin:0}
@@ -51,9 +52,9 @@ button:disabled{cursor:not-allowed;opacity:.45;transform:none!important;box-shad
 .start-operation-action:hover{background:linear-gradient(90deg,#ffe69c,#ffc766);box-shadow:0 16px 40px rgba(255,184,77,.34)}
 @media(max-width:700px){.field-theme-options{grid-template-columns:1fr}.field-theme-card{grid-template-columns:62px minmax(0,1fr) auto}.field-theme-preview{width:62px;height:42px}}
 @media(max-height:1000px) and (min-width:981px){
-  .menu-screen{padding-top:8px}
+  .menu-screen{padding-top:24px}
   .menu-settings-button{width:38px;height:38px;font-size:26px}
-  .hero-grid{margin:0 auto 14px}
+  .hero-grid{margin:12px auto 34px}
   .hero-orbit{width:min(15vw,180px)}
   .hero-copy h1{font-size:clamp(46px,5vw,80px)}
   .eyebrow{margin-bottom:8px}

@@ -15,7 +15,8 @@ test('shows the Signalfall brand in English without legacy project labels', asyn
   await expect(page).toHaveTitle('Signalfall');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signalfall');
   await expect(page.getByTestId('start-run')).toContainText('Start Operation');
-  await expect(page.getByRole('button', { name: 'Settings' })).toHaveCSS('font-size', '24px');
+  await expect(page.getByRole('button', { name: 'Settings' })).toHaveCSS('font-size', '26px');
+  await expect(page.locator('.hero-orbit')).toHaveCount(0);
 
   for (const removedText of [
     'A Phaser 4 reconstruction of the original Unity survival-action project',
