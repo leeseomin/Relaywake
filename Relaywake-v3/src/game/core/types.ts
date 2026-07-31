@@ -24,8 +24,11 @@ export interface HudSnapshot {
   remainingSeconds: number;
   kills: number;
   coins: number;
+  bossId: 'miniBoss' | 'finalBoss' | null;
   bossHp: number | null;
   bossMaxHp: number | null;
+  bossOffscreen: boolean;
+  bossDirectionRadians: number | null;
   abilities: ReadonlyArray<{ id: AbilityId; level: number; iconUrl: string }>;
 }
 

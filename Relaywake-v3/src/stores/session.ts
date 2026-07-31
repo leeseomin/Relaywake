@@ -17,8 +17,11 @@ const emptyHud = (): HudSnapshot => ({
   remainingSeconds: 600,
   kills: 0,
   coins: 0,
+  bossId: null,
   bossHp: null,
   bossMaxHp: null,
+  bossOffscreen: false,
+  bossDirectionRadians: null,
   abilities: [],
 });
 

@@ -21,3 +21,12 @@ button:disabled{cursor:not-allowed;opacity:.45;transform:none!important;box-shad
 
 /* Fire Master character accent */
 .character-card.fire-master .character-frame{filter:drop-shadow(0 0 12px rgba(255,111,45,.48)) drop-shadow(0 8px 12px rgba(0,0,0,.55))}.character-card.fire-master:before{background:linear-gradient(90deg,rgba(255,99,43,.15),transparent 48%)}.character-card.fire-master.selected{border-color:rgba(255,129,61,.72);background:rgba(39,19,21,.88)}.character-card.fire-master .selection-mark{color:#ff9f45}
+
+/* Final-boss identity and off-screen direction */
+.boss-hud{width:min(560px,calc(100vw - 28px));grid-template-columns:minmax(88px,auto) minmax(80px,1fr) minmax(28px,auto)}
+.boss-hud.final-boss{border-color:rgba(190,91,255,.58);box-shadow:0 0 34px rgba(177,76,255,.12)}
+.boss-identity{min-width:88px;display:inline-flex;align-items:center;justify-content:flex-start;gap:7px}
+.boss-name{white-space:nowrap;letter-spacing:.08em}
+.boss-direction{display:inline-block;flex:0 0 auto;color:#ffd56b!important;font-size:14px!important;line-height:1!important;transform-origin:center}
+.boss-meter{min-width:0}
+@media(max-width:700px){.boss-hud{grid-template-columns:minmax(82px,auto) minmax(48px,1fr) auto;gap:7px;padding-inline:9px}.boss-identity{min-width:82px;gap:5px}.boss-name{letter-spacing:.03em}.boss-direction{font-size:13px!important}}

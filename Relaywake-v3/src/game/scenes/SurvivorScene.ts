@@ -22,6 +22,7 @@ import { getAbility } from '../data/abilities';
 import { getCharacter, type CharacterId } from '../data/characters';
 import { getEnemy, type EnemyId } from '../data/enemies';
 import { levelOne, regularEnemyOrder } from '../data/level';
+import { t } from '../data/localization';
 import type { AbilityId, EnemyDefinition, WeaponStats } from '../data/schemas';
 import { attachActiveScene, detachActiveScene } from '../sceneBridge';
 import { AbilityDirector } from '../systems/AbilityDirector';
@@ -71,6 +72,22 @@ interface EnemyRuntime extends SpatialPoint {
   burnDamage: number;
   burnTimer: number;
   burnTickTimer: number;
+}
+
+interface BossSafeView {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
+interface FinalBossEncounterState {
+  enemyId: number | null;
+  outOfRangeDuration: number;
+  warningRemaining: number;
+  repositionCooldown: number;
 }
 
 interface ProjectileRuntime {
@@ -160,6 +177,15 @@ const ENEMY_CAP = 420;
 const E2E_ENEMY_CAP = 90;
 const HUD_INTERVAL = 0.08;
 const COMPACT_INTERVAL = 0.7;
+const BOSS_HUD_SAFE_TOP_PX = 120;
+const BOSS_EDGE_MARGIN_PX = 24;
+const FINAL_BOSS_CATCH_UP_MARGIN = 80;
+const FINAL_BOSS_FAR_DISTANCE_MULTIPLIER = 1.5;
+const FINAL_BOSS_RETURN_DISTANCE_MULTIPLIER = 1.35;
+const FINAL_BOSS_OUT_OF_RANGE_SECONDS = 2;
+const FINAL_BOSS_WARNING_SECONDS = 0.8;
+const FINAL_BOSS_REPOSITION_COOLDOWN_SECONDS = 8;
+const FINAL_BOSS_ATTACK_GRACE_SECONDS = 1.2;
 
 export class SurvivorScene extends Phaser.Scene {
   private options!: StartRunOptions;
@@ -180,6 +206,12 @@ export class SurvivorScene extends Phaser.Scene {
   private readonly meleeEffects: MeleeRuntime[] = [];
   private readonly orbiters = new Map<AbilityId, OrbiterRuntime[]>();
   private readonly spritePools = new Map<string, ObjectPool<Phaser.GameObjects.Sprite>>();
+  private readonly finalBossEncounter: FinalBossEncounterState = {
+    enemyId: null,
+    outOfRangeDuration: 0,
+    warningRemaining: 0,
+    repositionCooldown: 0,
+  };
 
   private nextEntityId = 1;
   private elapsedSeconds = 0;
@@ -215,6 +247,10 @@ export class SurvivorScene extends Phaser.Scene {
     this.options = options;
     this.durationSeconds = options.e2e ? 24 : levelOne.durationSeconds;
     this.miniBossSeconds = options.e2e ? 10 : levelOne.miniBossTimeSeconds;
+    this.finalBossEncounter.enemyId = null;
+    this.finalBossEncounter.outOfRangeDuration = 0;
+    this.finalBossEncounter.warningRemaining = 0;
+    this.finalBossEncounter.repositionCooldown = 0;
     this.rng = new SeededRandom(options.seed ?? Date.now());
     this.abilities = new AbilityDirector(this.rng);
     this.spawns = new SpawnDirector(this.rng, this.durationSeconds, this.miniBossSeconds);
@@ -251,6 +287,7 @@ export class SurvivorScene extends Phaser.Scene {
     this.updateRecovery(delta);
     this.updateSpawning(delta);
     this.updateEnemies(delta);
+    this.updateFinalBossEncounter(delta);
     separateSpatialCircles(this.enemies, this.enemyGrid);
     this.syncEnemyPositions();
     this.updateOrbiters(delta);
@@ -486,11 +523,11 @@ export class SurvivorScene extends Phaser.Scene {
     }
     if (tick.spawnMiniBoss) {
       this.spawnEnemy('miniBoss');
-      gameEvents.emit('toast', this.options.preferences.locale === 'ko' ? '미니보스 출현' : 'Mini-boss incoming');
+      gameEvents.emit('toast', t(this.options.preferences.locale, 'miniBossIncoming'));
     }
     if (tick.spawnFinalBoss) {
-      this.spawnEnemy('finalBoss');
-      gameEvents.emit('toast', this.options.preferences.locale === 'ko' ? '최종 보스 출현' : 'Final boss incoming');
+      this.spawnFinalBoss();
+      gameEvents.emit('toast', t(this.options.preferences.locale, 'finalBossIncoming'));
     }
 
     while (this.elapsedSeconds >= this.nextChestTime && this.nextChestTime < this.durationSeconds) {
@@ -503,13 +540,32 @@ export class SurvivorScene extends Phaser.Scene {
     }
   }
 
-  private spawnEnemy(id: EnemyId, fixedDistance?: number): void {
-    const definition = getEnemy(id);
+  private spawnFinalBoss(): EnemyRuntime {
+    const position = this.chooseFinalBossPosition();
+    return this.spawnEnemyAt(
+      'finalBoss',
+      position.x,
+      position.y,
+      FINAL_BOSS_ATTACK_GRACE_SECONDS,
+    );
+  }
+
+  private spawnEnemy(id: EnemyId, fixedDistance?: number): EnemyRuntime {
     const angle = this.rng.between(0, Math.PI * 2);
     const viewportRadius = Math.max(this.scale.width, this.scale.height) * 0.57;
     const radius = fixedDistance ?? viewportRadius + this.rng.between(110, 260);
     const x = this.player.x + Math.cos(angle) * radius;
     const y = this.player.y + Math.sin(angle) * radius;
+    return this.spawnEnemyAt(id, x, y);
+  }
+
+  private spawnEnemyAt(
+    id: EnemyId,
+    x: number,
+    y: number,
+    attackGraceSeconds = 0,
+  ): EnemyRuntime {
+    const definition = getEnemy(id);
     const sprite = this.acquireSprite(definition.spriteKey)
       .setPosition(x, y)
       .setScale(definition.displayScale)
@@ -518,7 +574,7 @@ export class SurvivorScene extends Phaser.Scene {
     const spawnIndex = regularEnemyOrder.indexOf(id as (typeof regularEnemyOrder)[number]);
     const hpMultiplier = spawnIndex >= 0 ? this.spawns.hpMultiplier(spawnIndex, this.elapsedSeconds) : 1;
     const maxHp = definition.hp * hpMultiplier;
-    this.enemies.push({
+    const enemy: EnemyRuntime = {
       id: this.nextId(),
       active: true,
       definition,
@@ -529,7 +585,10 @@ export class SurvivorScene extends Phaser.Scene {
       hp: maxHp,
       maxHp,
       radius: definition.radius,
-      attackTimer: this.rng.between(0.15, definition.attackCooldown),
+      attackTimer: Math.max(
+        attackGraceSeconds,
+        this.rng.between(0.15, definition.attackCooldown),
+      ),
       flashTimer: 0,
       knockbackX: 0,
       knockbackY: 0,
@@ -539,7 +598,15 @@ export class SurvivorScene extends Phaser.Scene {
       burnDamage: 0,
       burnTimer: 0,
       burnTickTimer: 0,
-    });
+    };
+    this.enemies.push(enemy);
+    if (id === 'finalBoss') {
+      this.finalBossEncounter.enemyId = enemy.id;
+      this.finalBossEncounter.outOfRangeDuration = 0;
+      this.finalBossEncounter.warningRemaining = 0;
+      this.finalBossEncounter.repositionCooldown = 0;
+    }
+    return enemy;
   }
 
   private updateEnemies(delta: number): void {
@@ -557,15 +624,26 @@ export class SurvivorScene extends Phaser.Scene {
       const distance = Math.max(0.001, Math.hypot(dx, dy));
       const directionX = dx / distance;
       const directionY = dy / distance;
+      const finalBossOffscreen = (
+        enemy.definition.id === 'finalBoss'
+        && !this.isInsideBossSafeView(enemy)
+      );
       let moveDirection = 1;
-      if (enemy.definition.behavior !== 'melee' && distance < enemy.definition.attackRange * 0.68) moveDirection = -0.55;
-      if (enemy.definition.behavior !== 'melee' && distance < enemy.definition.attackRange * 1.05 && distance >= enemy.definition.attackRange * 0.68) moveDirection = 0;
+      if (!finalBossOffscreen && enemy.definition.behavior !== 'melee' && distance < enemy.definition.attackRange * 0.68) moveDirection = -0.55;
+      if (!finalBossOffscreen && enemy.definition.behavior !== 'melee' && distance < enemy.definition.attackRange * 1.05 && distance >= enemy.definition.attackRange * 0.68) moveDirection = 0;
 
       const damping = Math.exp(-7 * delta);
       enemy.knockbackX *= damping;
       enemy.knockbackY *= damping;
-      enemy.x += (directionX * enemy.definition.speed * moveDirection + enemy.knockbackX) * delta;
-      enemy.y += (directionY * enemy.definition.speed * moveDirection + enemy.knockbackY) * delta;
+      const moveSpeed = finalBossOffscreen
+        ? Math.max(
+          enemy.definition.speed,
+          this.player.moveSpeed * this.abilities.globalModifiers().moveSpeed
+            + FINAL_BOSS_CATCH_UP_MARGIN,
+        )
+        : enemy.definition.speed;
+      enemy.x += (directionX * moveSpeed * moveDirection + enemy.knockbackX) * delta;
+      enemy.y += (directionY * moveSpeed * moveDirection + enemy.knockbackY) * delta;
 
       enemy.sprite.setFlipX(directionX < 0);
       if (distance > 2200 && !enemy.definition.boss) {
@@ -583,6 +661,227 @@ export class SurvivorScene extends Phaser.Scene {
         this.fireEnemyWeapon(enemy, directionX, directionY);
       }
     }
+  }
+
+  private updateFinalBossEncounter(delta: number): void {
+    const encounter = this.finalBossEncounter;
+    encounter.repositionCooldown = Math.max(0, encounter.repositionCooldown - delta);
+    const boss = this.activeFinalBoss();
+    if (!boss) {
+      encounter.outOfRangeDuration = 0;
+      encounter.warningRemaining = 0;
+      return;
+    }
+
+    const distance = Math.hypot(this.player.x - boss.x, this.player.y - boss.y);
+    const worldView = this.cameras.main.worldView;
+    const cameraDiagonal = Math.hypot(worldView.width, worldView.height);
+    if (cameraDiagonal <= Number.EPSILON) return;
+    const farDistance = cameraDiagonal * FINAL_BOSS_FAR_DISTANCE_MULTIPLIER;
+    const returnDistance = cameraDiagonal * FINAL_BOSS_RETURN_DISTANCE_MULTIPLIER;
+
+    if (encounter.warningRemaining > 0) {
+      if (distance <= returnDistance) {
+        encounter.warningRemaining = 0;
+        encounter.outOfRangeDuration = 0;
+        return;
+      }
+      encounter.warningRemaining = Math.max(0, encounter.warningRemaining - delta);
+      if (encounter.warningRemaining === 0) this.repositionFinalBoss(boss);
+      return;
+    }
+
+    if (encounter.repositionCooldown > 0) {
+      encounter.outOfRangeDuration = 0;
+      return;
+    }
+    if (distance > farDistance) {
+      encounter.outOfRangeDuration += delta;
+    } else if (distance <= returnDistance) {
+      encounter.outOfRangeDuration = 0;
+    }
+    if (encounter.outOfRangeDuration < FINAL_BOSS_OUT_OF_RANGE_SECONDS) return;
+
+    encounter.outOfRangeDuration = 0;
+    encounter.warningRemaining = FINAL_BOSS_WARNING_SECONDS;
+    gameEvents.emit('toast', t(this.options.preferences.locale, 'finalBossReacquired'));
+  }
+
+  private activeFinalBoss(): EnemyRuntime | null {
+    const encounterId = this.finalBossEncounter.enemyId;
+    const knownBoss = encounterId === null
+      ? null
+      : this.enemies.find((enemy) => (
+        enemy.id === encounterId
+        && enemy.active
+        && enemy.definition.id === 'finalBoss'
+      )) ?? null;
+    if (knownBoss) return knownBoss;
+
+    const boss = this.enemies.find((enemy) => (
+      enemy.active && enemy.definition.id === 'finalBoss'
+    )) ?? null;
+    this.finalBossEncounter.enemyId = boss?.id ?? null;
+    return boss;
+  }
+
+  private repositionFinalBoss(boss: EnemyRuntime): void {
+    const position = this.chooseFinalBossPosition();
+    boss.x = position.x;
+    boss.y = position.y;
+    boss.knockbackX = 0;
+    boss.knockbackY = 0;
+    boss.attackTimer = Math.max(boss.attackTimer, FINAL_BOSS_ATTACK_GRACE_SECONDS);
+    this.finalBossEncounter.outOfRangeDuration = 0;
+    this.finalBossEncounter.warningRemaining = 0;
+    this.finalBossEncounter.repositionCooldown = FINAL_BOSS_REPOSITION_COOLDOWN_SECONDS;
+  }
+
+  private chooseFinalBossPosition(): { x: number; y: number } {
+    const definition = getEnemy('finalBoss');
+    const safeView = this.bossSafeView(definition.radius);
+    const forward = this.playerForwardDirection();
+    const directPosition = this.rayExitFromSafeView(
+      this.player.x,
+      this.player.y,
+      forward.x,
+      forward.y,
+      safeView,
+    );
+    const safeDiagonal = Math.hypot(safeView.width, safeView.height);
+    const minimumDistance = Math.min(
+      safeDiagonal * 0.35,
+      definition.attackRange * 1.1,
+    );
+    if (
+      directPosition
+      && Math.hypot(
+        directPosition.x - this.player.x,
+        directPosition.y - this.player.y,
+      ) >= minimumDistance
+    ) {
+      return directPosition;
+    }
+
+    const centerX = (safeView.left + safeView.right) / 2;
+    const centerY = (safeView.top + safeView.bottom) / 2;
+    const edgePositions = [
+      { x: safeView.left, y: safeView.top },
+      { x: centerX, y: safeView.top },
+      { x: safeView.right, y: safeView.top },
+      { x: safeView.right, y: centerY },
+      { x: safeView.right, y: safeView.bottom },
+      { x: centerX, y: safeView.bottom },
+      { x: safeView.left, y: safeView.bottom },
+      { x: safeView.left, y: centerY },
+    ];
+    if (directPosition) edgePositions.push(directPosition);
+    const forwardPositions = edgePositions.filter((position) => (
+      (position.x - this.player.x) * forward.x
+      + (position.y - this.player.y) * forward.y
+    ) >= 0);
+    const candidates = forwardPositions.length > 0 ? forwardPositions : edgePositions;
+
+    let selected = candidates[0] ?? { x: centerX, y: centerY };
+    let selectedDistance = -1;
+    for (const candidate of candidates) {
+      const candidateDistance = distanceSquared(candidate, this.player);
+      if (candidateDistance <= selectedDistance) continue;
+      selected = candidate;
+      selectedDistance = candidateDistance;
+    }
+    return selected;
+  }
+
+  private playerForwardDirection(): { x: number; y: number } {
+    if (Math.hypot(this.player.vx, this.player.vy) > 2) {
+      return normalize(this.player.vx, this.player.vy);
+    }
+    return {
+      x: Math.cos(this.player.facingAngle),
+      y: Math.sin(this.player.facingAngle),
+    };
+  }
+
+  private rayExitFromSafeView(
+    originX: number,
+    originY: number,
+    directionX: number,
+    directionY: number,
+    safeView: BossSafeView,
+  ): { x: number; y: number } | null {
+    const intersections: Array<{ x: number; y: number; distance: number }> = [];
+    const epsilon = 0.0001;
+    if (Math.abs(directionX) > epsilon) {
+      for (const x of [safeView.left, safeView.right]) {
+        const distance = (x - originX) / directionX;
+        const y = originY + directionY * distance;
+        if (
+          distance > 0
+          && y >= safeView.top - epsilon
+          && y <= safeView.bottom + epsilon
+        ) {
+          intersections.push({ x, y, distance });
+        }
+      }
+    }
+    if (Math.abs(directionY) > epsilon) {
+      for (const y of [safeView.top, safeView.bottom]) {
+        const distance = (y - originY) / directionY;
+        const x = originX + directionX * distance;
+        if (
+          distance > 0
+          && x >= safeView.left - epsilon
+          && x <= safeView.right + epsilon
+        ) {
+          intersections.push({ x, y, distance });
+        }
+      }
+    }
+    let exit: (typeof intersections)[number] | null = null;
+    for (const intersection of intersections) {
+      if (!exit || intersection.distance > exit.distance) exit = intersection;
+    }
+    return exit ? { x: exit.x, y: exit.y } : null;
+  }
+
+  private bossSafeView(bossRadius: number): BossSafeView {
+    const camera = this.cameras.main;
+    const worldView = camera.worldView;
+    const zoom = Math.max(0.001, camera.zoom);
+    const edgeInset = bossRadius + BOSS_EDGE_MARGIN_PX / zoom;
+    const topInset = bossRadius + BOSS_HUD_SAFE_TOP_PX / zoom;
+    let left = worldView.x + edgeInset;
+    let right = worldView.x + worldView.width - edgeInset;
+    let top = worldView.y + topInset;
+    let bottom = worldView.y + worldView.height - edgeInset;
+
+    if (left > right) {
+      left = worldView.centerX;
+      right = worldView.centerX;
+    }
+    if (top > bottom) {
+      top = worldView.centerY;
+      bottom = worldView.centerY;
+    }
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      width: right - left,
+      height: bottom - top,
+    };
+  }
+
+  private isInsideBossSafeView(boss: EnemyRuntime): boolean {
+    const safeView = this.bossSafeView(boss.radius);
+    return (
+      boss.x >= safeView.left
+      && boss.x <= safeView.right
+      && boss.y >= safeView.top
+      && boss.y <= safeView.bottom
+    );
   }
 
   private syncEnemyPositions(): void {
@@ -1355,7 +1654,19 @@ export class SurvivorScene extends Phaser.Scene {
   private emitHud(force: boolean): void {
     if (!force && this.hudTimer > 0) return;
     this.hudTimer = HUD_INTERVAL;
-    const boss = this.enemies.find((enemy) => enemy.active && enemy.definition.boss) ?? null;
+    const finalBoss = this.enemies.find((enemy) => (
+      enemy.active && enemy.definition.id === 'finalBoss'
+    )) ?? null;
+    const miniBoss = this.enemies.find((enemy) => (
+      enemy.active && enemy.definition.id === 'miniBoss'
+    )) ?? null;
+    const boss = finalBoss ?? miniBoss;
+    const bossId = boss?.definition.id === 'finalBoss'
+      ? 'finalBoss'
+      : boss?.definition.id === 'miniBoss'
+        ? 'miniBoss'
+        : null;
+    const bossOffscreen = boss ? !this.isInsideBossSafeView(boss) : false;
     const snapshot: HudSnapshot = {
       hp: this.player.hp,
       maxHp: this.player.maxHp,
@@ -1366,8 +1677,13 @@ export class SurvivorScene extends Phaser.Scene {
       remainingSeconds: Math.max(0, this.durationSeconds - this.elapsedSeconds),
       kills: this.kills,
       coins: this.coins,
+      bossId,
       bossHp: boss?.hp ?? null,
       bossMaxHp: boss?.maxHp ?? null,
+      bossOffscreen,
+      bossDirectionRadians: boss && bossOffscreen
+        ? Math.atan2(boss.y - this.player.y, boss.x - this.player.x)
+        : null,
       abilities: this.abilities.owned().map((state) => ({
         id: state.id,
         level: state.level,

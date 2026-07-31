@@ -14,6 +14,11 @@ const bossRatio = computed(() => {
   if (props.hud.bossHp === null || props.hud.bossMaxHp === null) return 0;
   return Math.max(0, Math.min(1, props.hud.bossHp / Math.max(1, props.hud.bossMaxHp)));
 });
+const bossLabel = computed(() => (
+  props.hud.bossId === null ? '' : t(props.locale, props.hud.bossId)
+));
+const bossHealthLabel = computed(() => `${bossLabel.value} ${t(props.locale, 'health')}`);
+const bossDirectionLabel = computed(() => `${bossLabel.value} ${t(props.locale, 'bossDirection')}`);
 </script>
 
 <template>
@@ -51,7 +56,7 @@ const bossRatio = computed(() => {
     </div>
 
     <div class="hud-center" :class="{ critical: criticalTime }">
-      <strong>{{ formatClock(props.hud.remainingSeconds) }}</strong>
+      <strong>{{ formatClock(Math.ceil(props.hud.remainingSeconds)) }}</strong>
       <small>{{ t(props.locale, 'time') }}</small>
     </div>
 
@@ -69,11 +74,25 @@ const bossRatio = computed(() => {
     </div>
   </header>
 
-  <div v-if="props.hud.bossHp !== null" class="boss-hud">
-    <span>BOSS SIGNAL</span>
+  <div
+    v-if="props.hud.bossId !== null && props.hud.bossHp !== null"
+    class="boss-hud"
+    :class="{ 'final-boss': props.hud.bossId === 'finalBoss' }"
+  >
+    <span class="boss-identity">
+      <span class="boss-name">{{ bossLabel }}</span>
+      <span
+        v-if="props.hud.bossOffscreen && props.hud.bossDirectionRadians !== null"
+        class="boss-direction"
+        role="img"
+        :aria-label="bossDirectionLabel"
+        :style="{ transform: `rotate(${props.hud.bossDirectionRadians}rad)` }"
+      >➜</span>
+    </span>
     <div
+      class="boss-meter"
       role="progressbar"
-      aria-label="Boss health"
+      :aria-label="bossHealthLabel"
       :aria-valuenow="Math.max(0, Math.ceil(props.hud.bossHp ?? 0))"
       aria-valuemin="0"
       :aria-valuemax="props.hud.bossMaxHp ?? 1"
