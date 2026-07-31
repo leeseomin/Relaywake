@@ -14,6 +14,10 @@ import { gameController } from './game/GameController';
 import type { RunSummary, StartRunOptions } from './game/core/types';
 import type { AbilityId } from './game/data/schemas';
 import type { CharacterId } from './game/data/characters';
+import {
+  defaultFieldThemeId,
+  type FieldThemeId,
+} from './game/data/fieldThemes';
 import { t } from './game/data/localization';
 import { useProfileStore } from './stores/profile';
 import { useSessionStore } from './stores/session';
@@ -66,9 +70,13 @@ onBeforeUnmount(() => {
   if (toastTimer.value !== null) window.clearTimeout(toastTimer.value);
 });
 
-function buildRunOptions(characterId: CharacterId): StartRunOptions {
+function buildRunOptions(
+  characterId: CharacterId,
+  fieldThemeId: FieldThemeId,
+): StartRunOptions {
   return {
     characterId,
+    fieldThemeId,
     seed: e2e ? 20260729 : Date.now(),
     e2e,
     preferences: {
@@ -80,16 +88,22 @@ function buildRunOptions(characterId: CharacterId): StartRunOptions {
   };
 }
 
-async function startRun(characterId: CharacterId): Promise<void> {
+async function startRun(
+  characterId: CharacterId,
+  fieldThemeId: FieldThemeId,
+): Promise<void> {
   gameController.destroy();
   session.start(characterId);
-  currentOptions.value = buildRunOptions(characterId);
+  currentOptions.value = buildRunOptions(characterId, fieldThemeId);
   runKey.value += 1;
   await nextTick();
 }
 
 async function restartRun(): Promise<void> {
-  await startRun(session.selectedCharacter);
+  await startRun(
+    session.selectedCharacter,
+    currentOptions.value?.fieldThemeId ?? defaultFieldThemeId,
+  );
 }
 
 function selectAbility(id: AbilityId): void {

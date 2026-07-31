@@ -1,5 +1,6 @@
 import type { AbilityId } from '../data/schemas';
 import type { CharacterId } from '../data/characters';
+import type { FieldThemeId } from '../data/fieldThemes';
 import type { Locale } from '../data/localization';
 
 export interface AbilityChoiceView {
@@ -53,6 +54,7 @@ export interface GameRuntimePreferences {
 
 export interface StartRunOptions {
   characterId: CharacterId;
+  fieldThemeId: FieldThemeId;
   preferences: GameRuntimePreferences;
   seed?: number;
   e2e?: boolean;
@@ -62,6 +64,7 @@ export interface GameTestSnapshot {
   ready: boolean;
   paused: boolean;
   characterId: CharacterId;
+  fieldThemeId: FieldThemeId;
   hp: number;
   maxHp: number;
   level: number;

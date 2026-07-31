@@ -1,6 +1,6 @@
 # Signalfall
 
-첨부된 Unity 2021.3 기반 `VampireSurvivorsClone`을 **Vite + Vue 3 + TypeScript(strict) + Phaser 4.2.1 + Pinia + Zod + Dexie + Vitest + Playwright** 구조로 다시 구현한 웹 프로젝트입니다. Unity 프로젝트를 웹 페이지에 감싼 것이 아니라, 원본의 게임 규칙·수치·이미지 자산을 웹 런타임에 맞춰 재구성했습니다.
+[`VampireSurvivorsClone`](https://github.com/matthiasbroske/VampireSurvivorsClone)을 **Vite + Vue 3 + TypeScript(strict) + Phaser 4.2.1 + Pinia + Zod + Dexie + Vitest + Playwright** 구조로 다시 구현하고, 유닛을 새롭게 디자인했습니다.
 
 ## 구현 범위
 

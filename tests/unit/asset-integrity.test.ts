@@ -223,6 +223,7 @@ describe('asset manifest integrity', () => {
       'src/game/scenes/SurvivorScene.ts',
       'src/game/data/characters.ts',
       'src/game/data/enemies.ts',
+      'src/game/data/fieldThemes.ts',
     ].map((path) => readFileSync(resolve(process.cwd(), path), 'utf8')).join('\n');
     const bootSource = readFileSync(
       resolve(process.cwd(), 'src/game/scenes/BootScene.ts'),

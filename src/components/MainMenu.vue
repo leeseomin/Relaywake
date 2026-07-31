@@ -2,14 +2,20 @@
 import { computed, ref } from 'vue';
 import { assetPath } from '../game/assets';
 import { characters, type CharacterId } from '../game/data/characters';
+import {
+  defaultFieldThemeId,
+  fieldThemes,
+  type FieldThemeId,
+} from '../game/data/fieldThemes';
 import { t, type Locale } from '../game/data/localization';
 
 const props = defineProps<{ locale: Locale; coins: number }>();
 const emit = defineEmits<{
-  start: [characterId: CharacterId];
+  start: [characterId: CharacterId, fieldThemeId: FieldThemeId];
   settings: [];
 }>();
 const selected = ref<CharacterId>('blue');
+const selectedFieldTheme = ref<FieldThemeId>(defaultFieldThemeId);
 const selectedCharacter = computed(() => characters.find((character) => character.id === selected.value) ?? characters[0]);
 const characterSprites: Record<CharacterId, string> = {
   blue: assetPath('character-roseglass'),
@@ -25,7 +31,7 @@ const characterCodes: Record<CharacterId, string> = {
   gray: 'DUNEHORN',
   fire: 'FIRE',
 };
-const menuNoiseStyle = { backgroundImage: `url(${assetPath('menu-noise')})` };
+const menuNoiseStyle = { backgroundImage: `url(${assetPath('background-perlin')})` };
 
 function statWidth(value: number, min: number, max: number): string {
   return `${Math.round(((value - min) / (max - min)) * 60 + 32)}%`;
@@ -35,13 +41,6 @@ function statWidth(value: number, min: number, max: number): string {
 <template>
   <section class="menu-screen">
     <div class="menu-noise" :style="menuNoiseStyle" aria-hidden="true"></div>
-    <header class="menu-topbar">
-      <div class="brand-lockup">
-        <span class="brand-index">SIGNALFALL</span>
-        <span class="brand-dot"></span>
-      </div>
-      <button class="icon-button menu-settings-button" type="button" aria-label="Settings" @click="emit('settings')">⚙</button>
-    </header>
 
     <div class="hero-grid">
       <div class="hero-copy">
@@ -51,8 +50,14 @@ function statWidth(value: number, min: number, max: number): string {
       <div class="hero-orbit" aria-hidden="true">
         <div class="orbit-ring orbit-ring-a"></div>
         <div class="orbit-ring orbit-ring-b"></div>
-        <div class="orbit-core">10:00</div>
+        <div class="orbit-core"></div>
       </div>
+      <button
+        class="icon-button menu-settings-button hero-settings-button"
+        type="button"
+        aria-label="Settings"
+        @click="emit('settings')"
+      >⚙</button>
     </div>
 
     <section class="operative-panel">
@@ -116,7 +121,50 @@ function statWidth(value: number, min: number, max: number): string {
               <b>{{ selectedCharacter.luck.toFixed(2) }}</b>
             </div>
           </dl>
-          <button class="primary-action" type="button" data-testid="start-run" @click="emit('start', selected)">
+
+          <section class="field-selector">
+            <div class="field-selector-heading">
+              <p class="detail-code">02 / {{ t(props.locale, 'chooseField') }}</p>
+              <span>{{ t(props.locale, 'visualOnly') }}</span>
+            </div>
+            <div
+              class="field-theme-options"
+              role="radiogroup"
+              :aria-label="t(props.locale, 'chooseField')"
+            >
+              <button
+                v-for="theme in fieldThemes"
+                :key="theme.id"
+                class="field-theme-card"
+                :class="{ selected: selectedFieldTheme === theme.id }"
+                :data-testid="`field-theme-${theme.id}`"
+                type="button"
+                role="radio"
+                :aria-checked="selectedFieldTheme === theme.id"
+                @click="selectedFieldTheme = theme.id"
+              >
+                <span
+                  class="field-theme-preview"
+                  :style="{ backgroundImage: `url(${assetPath(theme.assetKey)})` }"
+                  aria-hidden="true"
+                ></span>
+                <span class="field-theme-copy">
+                  <strong>{{ theme.name[props.locale] }}</strong>
+                  <small>{{ theme.description[props.locale] }}</small>
+                </span>
+                <span class="selection-mark">
+                  {{ selectedFieldTheme === theme.id ? '●' : '○' }}
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <button
+            class="primary-action start-operation-action"
+            type="button"
+            data-testid="start-run"
+            @click="emit('start', selected, selectedFieldTheme)"
+          >
             <span>{{ t(props.locale, 'start') }}</span><span aria-hidden="true">→</span>
           </button>
           <p class="control-note">{{ t(props.locale, 'controls') }}</p>

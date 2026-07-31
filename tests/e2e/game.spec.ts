@@ -32,6 +32,31 @@ test('shows the Signalfall brand in English without legacy project labels', asyn
   }
 });
 
+test('keeps the loadout visible on a wide, short display', async ({ page }) => {
+  await page.setViewportSize({ width: 2048, height: 911 });
+  await page.reload();
+
+  await expect(page.getByTestId('character-blue')).toBeInViewport({ ratio: 0.8 });
+  await expect(page.getByTestId('field-theme-classic')).toBeInViewport({ ratio: 0.5 });
+});
+
+test('defaults to the classic field and starts with the selected field theme', async ({ page }) => {
+  const classic = page.getByTestId('field-theme-classic');
+  const starlit = page.getByTestId('field-theme-starlit');
+
+  await expect(classic).toHaveAttribute('aria-checked', 'true');
+  await expect(starlit).toHaveAttribute('aria-checked', 'false');
+
+  await starlit.click();
+  await expect(classic).toHaveAttribute('aria-checked', 'false');
+  await expect(starlit).toHaveAttribute('aria-checked', 'true');
+  await startRun(page);
+
+  await expect.poll(
+    () => page.evaluate(() => window.__C2_GAME__?.snapshot().fieldThemeId),
+  ).toBe('starlit');
+});
+
 test('selects Fire Master and starts with the orbiting fire core', async ({ page }) => {
   await page.getByTestId('character-fire').click();
   await expect(page.locator('.character-detail')).toContainText(/파이어 마스터|Fire Master/);

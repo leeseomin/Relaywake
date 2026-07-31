@@ -21,6 +21,7 @@ import type {
 import { getAbility } from '../data/abilities';
 import { getCharacter, type CharacterId } from '../data/characters';
 import { getEnemy, type EnemyId } from '../data/enemies';
+import { fieldBackgroundLayers, getFieldTheme } from '../data/fieldThemes';
 import { levelOne, regularEnemyOrder } from '../data/level';
 import { t } from '../data/localization';
 import type { AbilityId, EnemyDefinition, WeaponStats } from '../data/schemas';
@@ -195,6 +196,7 @@ export class SurvivorScene extends Phaser.Scene {
   private spawns!: SpawnDirector;
   private background!: Phaser.GameObjects.TileSprite;
   private backgroundTint!: Phaser.GameObjects.TileSprite;
+  private backgroundNoise!: Phaser.GameObjects.TileSprite;
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | null = null;
   private keys: Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key> | null = null;
 
@@ -347,6 +349,7 @@ export class SurvivorScene extends Phaser.Scene {
       ready: true,
       paused: this.paused,
       characterId: this.player.characterId,
+      fieldThemeId: this.options.fieldThemeId,
       hp: this.player.hp,
       maxHp: this.player.maxHp,
       level: this.level,
@@ -390,18 +393,37 @@ export class SurvivorScene extends Phaser.Scene {
   }
 
   private createBackground(): void {
-    this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'background-dirt')
+    const fieldTheme = getFieldTheme(this.options.fieldThemeId);
+    this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, fieldTheme.assetKey)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(-1000);
-    this.backgroundTint = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'background-dirt-red')
+    this.backgroundTint = this.add.tileSprite(
+      0,
+      0,
+      this.scale.width,
+      this.scale.height,
+      fieldBackgroundLayers.tintAssetKey,
+    )
       .setOrigin(0)
       .setScrollFactor(0)
       .setAlpha(0.11)
       .setBlendMode(Phaser.BlendModes.ADD)
       .setDepth(-999);
+    this.backgroundNoise = this.add.tileSprite(
+      0,
+      0,
+      this.scale.width,
+      this.scale.height,
+      fieldBackgroundLayers.noiseAssetKey,
+    )
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setAlpha(0.08)
+      .setBlendMode(Phaser.BlendModes.MULTIPLY)
+      .setDepth(-998);
 
-    const dust = this.add.graphics().setDepth(-998);
+    const dust = this.add.graphics().setDepth(-997);
     dust.fillStyle(0x91a4c8, 0.06);
     for (let index = 0; index < 120; index += 1) {
       const x = this.rng.between(-1800, 1800);
@@ -462,11 +484,14 @@ export class SurvivorScene extends Phaser.Scene {
     if (this.background.width !== width || this.background.height !== height) {
       this.background.setSize(width, height);
       this.backgroundTint.setSize(width, height);
+      this.backgroundNoise.setSize(width, height);
     }
     this.background.tilePositionX = this.player.x * 0.28;
     this.background.tilePositionY = this.player.y * 0.28;
     this.backgroundTint.tilePositionX = this.player.x * 0.18;
     this.backgroundTint.tilePositionY = this.player.y * 0.18;
+    this.backgroundNoise.tilePositionX = this.background.tilePositionX;
+    this.backgroundNoise.tilePositionY = this.background.tilePositionY;
   }
 
   private updatePlayer(delta: number): void {
