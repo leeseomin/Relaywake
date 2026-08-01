@@ -43,13 +43,8 @@ Choose an operative and field theme, survive escalating enemy waves, combine upg
 
 ## Technology
 
-- Vue 3 and Pinia for application UI and state
-- Phaser 4.2.1 for the real-time game runtime
-- TypeScript in strict mode
-- Zod for game-data and persistence validation
-- Dexie and IndexedDB for local persistence
-- Vite for development and production builds
-- Vitest and Playwright for automated validation
+- **Runtime:** Vue 3, Pinia, Phaser 4.2.1, TypeScript, Zod, and Dexie with IndexedDB
+- **Tooling:** Vite, Vitest, and Playwright
 
 ## Project structure
 
