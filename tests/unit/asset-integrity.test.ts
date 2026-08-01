@@ -274,7 +274,7 @@ describe('asset manifest integrity', () => {
         expect(asset.source.sourceUrl).toBeNull();
         expect(asset.source.commit).toBeNull();
         expect(asset.license.id).toBe('MIT');
-        expect(asset.license.owner).toBe('Relaywake contributors');
+        expect(asset.license.owner).toBe('leeseomin');
         expect(asset.license.verification).toBe('project-provenance');
         if (asset.source.kind === 'generated') {
           expect(asset.source.path).toBeNull();

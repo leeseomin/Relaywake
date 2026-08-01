@@ -113,13 +113,13 @@ function generated(
       sourceUrl: null,
       commit: null,
       path: null,
-      author: 'Relaywake (OpenAI-assisted)',
+      author: 'leeseomin (OpenAI-assisted for RELAYWAKE)',
       modified,
     },
     license: {
       id: 'MIT',
       evidence: 'LICENSE',
-      owner: 'Relaywake contributors',
+      owner: 'leeseomin',
       verification: 'project-provenance',
     },
   };
@@ -136,13 +136,13 @@ function projectDerived(
       sourceUrl: null,
       commit: null,
       path,
-      author: 'Relaywake contributors (derived from user-provided source)',
+      author: 'leeseomin (created for RELAYWAKE)',
       modified,
     },
     license: {
       id: 'MIT',
       evidence: 'LICENSE',
-      owner: 'Relaywake contributors',
+      owner: 'leeseomin',
       verification: 'project-provenance',
     },
   };
@@ -164,7 +164,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'public/assets/backgrounds/dirt.png',
-      'User-provided 512×512 earth-field texture selected as the default terrain.',
+      '512×512 earth-field texture created and selected by leeseomin for the default RELAYWAKE terrain.',
     ),
   },
   {
@@ -175,7 +175,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'public/assets/backgrounds/dirt2.png',
-      'User-provided 512×512 starlit-field texture selected as the alternate terrain.',
+      '512×512 starlit-field texture created and selected by leeseomin for the alternate RELAYWAKE terrain.',
     ),
   },
   {
@@ -255,7 +255,7 @@ export const assetManifest = [
     consumers: ['phaser', 'menu-css'],
     ...projectDerived(
       'kite-fire-v2.html',
-      'Redrawn as a four-frame transparent sprite sheet from the bundled coral-shirt, wavy-hair canvas character.',
+      'Redrawn as a four-frame transparent sprite sheet from the coral-shirt, wavy-hair development source used for RELAYWAKE.',
     ),
   },
 
@@ -404,7 +404,7 @@ export const assetManifest = [
     consumers: ['phaser', 'ability-icon'],
     ...projectDerived(
       'kite-fire-v2.html',
-      'Rebuilt from the bundled 11×11 PIXEL_ORB_MATRIX and its original fire palette at a 2× pixel scale.',
+      'Rebuilt from the 11×11 PIXEL_ORB_MATRIX in the development source used for RELAYWAKE, preserving its fire palette at a 2× pixel scale.',
     ),
   },
   {
