@@ -87,7 +87,7 @@ npm run check
 
 ### Project
 
-**RELAYWAKE** is developed and maintained by [**leeseomin**](https://github.com/leeseomin). It is a browser-based reimplementation inspired by [VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone) by Matthias Broske.
+**RELAYWAKE** is developed and maintained by [**leeseomin**](https://github.com/leeseomin). It is a browser-based reimplementation of [VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone) by Matthias Broske, combining adapted elements from the original project with a redesigned interface and a new web-focused implementation.
 
 ### License
 
@@ -98,8 +98,4 @@ RELAYWAKE is distributed under the [`MIT License`](LICENSE). The original projec
 | VampireSurvivorsClone | © 2024 Matthias Broske |
 | RELAYWAKE | © 2026 leeseomin |
 
-### Documentation
-
-- [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) — Asset provenance, third-party credits, and license evidence
-- [`src/game/assets.ts`](src/game/assets.ts) — Canonical asset manifest
-- [`MIGRATION.md`](MIGRATION.md) — Unity-to-web implementation mapping
+Third-party asset credits and license details are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
