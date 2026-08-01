@@ -2,7 +2,7 @@ export type Locale = 'ko' | 'en';
 
 export const messages = {
   ko: {
-    title: 'Signalfall',
+    title: 'RELAYWAKE',
     start: '작전 시작',
     continue: '이어하기',
     settings: '설정',
@@ -52,7 +52,7 @@ export const messages = {
     profileReset: '저장 데이터를 초기화했습니다.',
   },
   en: {
-    title: 'Signalfall',
+    title: 'RELAYWAKE',
     start: 'Start Operation',
     continue: 'Continue',
     settings: 'Settings',

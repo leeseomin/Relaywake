@@ -11,9 +11,9 @@ test.beforeEach(async ({ page }) => {
   await openIsolatedApp(page);
 });
 
-test('shows the Signalfall brand in English without legacy project labels', async ({ page }) => {
-  await expect(page).toHaveTitle('Signalfall');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signalfall');
+test('shows the RELAYWAKE brand in English without legacy project labels', async ({ page }) => {
+  await expect(page).toHaveTitle('RELAYWAKE');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('RELAYWAKE');
   await expect(page.getByTestId('start-run')).toContainText('Start Operation');
   await expect(page.getByRole('button', { name: 'Settings' })).toHaveCSS('font-size', '26px');
   await expect(page.locator('.hero-orbit')).toHaveCount(0);

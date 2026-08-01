@@ -54,10 +54,7 @@ export async function readProfile(): Promise<Profile | undefined> {
   if (parsed.success) return parsed.data;
 
   const recovered = migrateProfile(row) ?? defaultProfile();
-  await db.transaction('rw', db.profiles, db.recovery, async () => {
-    await db.recovery.put(createRecoveryRow('profiles', row, parsed.error.message));
-    await db.profiles.put(recovered);
-  });
+  await repairProfile(row, recovered, parsed.error.message);
   return recovered;
 }
 
@@ -69,10 +66,7 @@ export async function readSettings(): Promise<Settings | undefined> {
   if (parsed.success) return parsed.data;
 
   const recovered = migrateSettings(row) ?? defaultSettings();
-  await db.transaction('rw', db.settings, db.recovery, async () => {
-    await db.recovery.put(createRecoveryRow('settings', row, parsed.error.message));
-    await db.settings.put(recovered);
-  });
+  await repairSettings(row, recovered, parsed.error.message);
   return recovered;
 }
 
@@ -148,6 +142,52 @@ function createRecoveryRow(
     reason,
     value,
   };
+}
+
+async function repairProfile(
+  value: unknown,
+  recovered: Profile,
+  reason: string,
+): Promise<void> {
+  try {
+    await db.transaction('rw', db.profiles, db.recovery, async () => {
+      await db.recovery.put(createRecoveryRow('profiles', value, reason));
+      await db.profiles.put(recovered);
+    });
+  } catch (quarantineError) {
+    // A full recovery backup can fail independently (for example, when storage is full).
+    // Replacing the bad row still prevents it from blocking every later application start.
+    try {
+      await db.profiles.put(recovered);
+    } catch (replacementError) {
+      console.error('The malformed profile could not be persisted after recovery.', {
+        quarantineError,
+        replacementError,
+      });
+    }
+  }
+}
+
+async function repairSettings(
+  value: unknown,
+  recovered: Settings,
+  reason: string,
+): Promise<void> {
+  try {
+    await db.transaction('rw', db.settings, db.recovery, async () => {
+      await db.recovery.put(createRecoveryRow('settings', value, reason));
+      await db.settings.put(recovered);
+    });
+  } catch (quarantineError) {
+    try {
+      await db.settings.put(recovered);
+    } catch (replacementError) {
+      console.error('The malformed settings could not be persisted after recovery.', {
+        quarantineError,
+        replacementError,
+      });
+    }
+  }
 }
 
 function migrateProfile(value: unknown): Profile | null {

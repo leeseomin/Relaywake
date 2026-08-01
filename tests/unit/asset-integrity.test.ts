@@ -284,6 +284,8 @@ describe('asset manifest integrity', () => {
             'kite-fire-v2.html',
             'pixel-character-maker-mongle.html',
             '../monster-generator.html',
+            'public/assets/backgrounds/dirt.png',
+            'public/assets/backgrounds/dirt2.png',
           ]).toContain(asset.source.path);
           expect(asset.source.modified?.length ?? 0).toBeGreaterThan(0);
         }

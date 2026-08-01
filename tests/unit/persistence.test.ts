@@ -250,7 +250,7 @@ describe('run/profile persistence', () => {
     await expect(db.recovery.count()).resolves.toBe(1);
   });
 
-  it('keeps the malformed source record when recovery cannot be committed', async () => {
+  it('repairs the malformed source even when its recovery backup cannot be committed', async () => {
     const malformed = { ...defaultProfile(), coins: -1 };
     await db.profiles.put(malformed as unknown as Profile);
     const rejectRecovery = (): never => {
@@ -259,13 +259,35 @@ describe('run/profile persistence', () => {
     db.recovery.hook('creating', rejectRecovery);
 
     try {
-      await expect(readProfile()).rejects.toThrow('simulated recovery failure');
-      await expect(db.profiles.get('main')).resolves.toEqual(malformed);
+      await expect(readProfile()).resolves.toMatchObject({ coins: 0 });
+      await expect(db.profiles.get('main')).resolves.toMatchObject({ coins: 0 });
     } finally {
       db.recovery.hook('creating').unsubscribe(rejectRecovery);
     }
 
     await expect(readProfile()).resolves.toMatchObject({ coins: 0 });
+  });
+
+  it('returns safe defaults when every malformed-profile repair write fails', async () => {
+    const malformed = { ...defaultProfile(), coins: -1 };
+    await db.profiles.put(malformed as unknown as Profile);
+    const rejectRecovery = (): never => {
+      throw new Error('simulated recovery failure');
+    };
+    const rejectReplacement = (): never => {
+      throw new Error('simulated replacement failure');
+    };
+    db.recovery.hook('creating', rejectRecovery);
+    db.profiles.hook('updating', rejectReplacement);
+
+    try {
+      await expect(readProfile()).resolves.toMatchObject({ coins: 0 });
+      await expect(readProfile()).resolves.toMatchObject({ coins: 0 });
+      await expect(db.profiles.get('main')).resolves.toEqual(malformed);
+    } finally {
+      db.recovery.hook('creating').unsubscribe(rejectRecovery);
+      db.profiles.hook('updating').unsubscribe(rejectReplacement);
+    }
   });
 
   it('rolls back the whole database reset when a default write fails', async () => {

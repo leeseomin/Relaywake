@@ -1,4 +1,4 @@
-# Relaywake / Signalfall 코어 로직과 실행 파이프라인
+# Relaywake 코어 로직과 실행 파이프라인
 
 이 문서는 현재 저장소의 코드를 기준으로 앱 시작부터 게임 런 종료와 로컬 저장까지의 실제 실행 흐름을 설명한다. 게임 규칙의 최종 소스는 `src/game/data`, 실시간 시뮬레이션의 최종 소스는 `src/game/scenes/SurvivorScene.ts`다.
 

@@ -5,7 +5,7 @@ const projectRoot = resolve(import.meta.dirname, '..');
 const outputDirectory = resolve(projectRoot, 'dist');
 const maximumAssetBytes = 25 * 1024 * 1024;
 const forbiddenJavaScriptMarkers = [
-  '__C2_GAME__',
+  'C2_GAME',
   'testKillFinalBoss',
   '20260729',
 ];
@@ -20,6 +20,9 @@ function walkFiles(directory) {
 const files = walkFiles(outputDirectory);
 if (!files.some((path) => relative(outputDirectory, path) === 'index.html')) {
   throw new Error('Production output does not contain dist/index.html.');
+}
+if (files.some((path) => /testBridge/i.test(relative(outputDirectory, path)))) {
+  throw new Error('Production output contains an E2E test-bridge chunk.');
 }
 
 for (const path of files) {
