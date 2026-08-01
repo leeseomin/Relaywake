@@ -218,6 +218,17 @@ describe('run/profile persistence', () => {
     await expect(db.recovery.count()).resolves.toBe(1);
   });
 
+  it.each(['ja', 'zh-Hans', 'es', 'fr'] as const)(
+    'keeps the supported %s locale while reading settings',
+    async (locale) => {
+      const settings = { ...defaultSettings(), locale };
+      await db.settings.put(settings);
+
+      await expect(readSettings()).resolves.toEqual(settings);
+      await expect(db.recovery.count()).resolves.toBe(0);
+    },
+  );
+
   it('opens a version-1 database and migrates its incomplete profile on first read', async () => {
     db.close();
     await db.delete();

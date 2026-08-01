@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { abilities } from '../../src/game/data/abilities';
 import { characters } from '../../src/game/data/characters';
 import { enemies } from '../../src/game/data/enemies';
+import { fieldThemes } from '../../src/game/data/fieldThemes';
 import { levelOne } from '../../src/game/data/level';
+import { locales, messages } from '../../src/game/data/localization';
 
 describe('Zod-validated game data', () => {
   it('loads the complete catalog without duplicate ids', () => {
@@ -11,6 +13,27 @@ describe('Zod-validated game data', () => {
     expect(characters).toHaveLength(5);
     expect(enemies).toHaveLength(8);
     expect(levelOne.durationSeconds).toBe(600);
+  });
+
+  it('provides complete text for every supported locale', () => {
+    for (const locale of locales) {
+      expect(Object.keys(messages[locale])).toEqual(Object.keys(messages.en));
+      for (const value of Object.values(messages[locale])) {
+        expect(value.trim()).not.toBe('');
+      }
+      for (const ability of abilities) {
+        expect(ability.name[locale].trim()).not.toBe('');
+        expect(ability.description[locale].trim()).not.toBe('');
+      }
+      for (const character of characters) {
+        expect(character.name[locale].trim()).not.toBe('');
+        expect(character.description[locale].trim()).not.toBe('');
+      }
+      for (const theme of fieldThemes) {
+        expect(theme.name[locale].trim()).not.toBe('');
+        expect(theme.description[locale].trim()).not.toBe('');
+      }
+    }
   });
 
   it('registers the four Mongle replacements while retaining stable save-compatible ids', () => {

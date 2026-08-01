@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import type { Locale } from '../../src/game/data/localization';
 
 const DATABASE_NAME = 'c2-nightfall';
 const GAME_STORES = ['profiles', 'settings', 'runs'] as const;
@@ -28,7 +29,7 @@ export interface StoredProfile {
 
 export interface StoredSettings {
   id: 'main';
-  locale: 'ko' | 'en';
+  locale: Locale;
   soundEnabled: boolean;
   screenShake: boolean;
   damageNumbers: boolean;

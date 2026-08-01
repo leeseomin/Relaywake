@@ -1425,7 +1425,7 @@ export class SurvivorScene extends Phaser.Scene {
       case 'magnet':
         this.magnetTimer = Math.max(this.magnetTimer, 5);
         for (const other of this.pickups) other.attracted = true;
-        gameEvents.emit('toast', this.options.preferences.locale === 'ko' ? '자석 활성화' : 'Magnet activated');
+        gameEvents.emit('toast', t(this.options.preferences.locale, 'magnetActivated'));
         break;
       case 'bomb':
         for (const enemy of this.enemies) {
@@ -1540,9 +1540,7 @@ export class SurvivorScene extends Phaser.Scene {
       this.deactivateEnemy(enemy, false);
       gameEvents.emit(
         'toast',
-        this.options.preferences.locale === 'ko'
-          ? `최종 보스 보상 · ◆ ${FINAL_BOSS_COIN_REWARD}`
-          : `Final boss reward · ◆ ${FINAL_BOSS_COIN_REWARD}`,
+        `${t(this.options.preferences.locale, 'finalBossReward')} · ◆ ${FINAL_BOSS_COIN_REWARD}`,
       );
       this.finishRun(true);
       return;

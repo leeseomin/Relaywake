@@ -24,6 +24,21 @@ describe('settings persistence', () => {
     expect(store.settings.locale).toBe('en');
   });
 
+  it.each(['ja', 'zh-Hans', 'es', 'fr'] as const)(
+    'persists the %s locale selection',
+    async (locale) => {
+      const store = useSettingsStore();
+      vi.spyOn(persistence, 'writeSettings').mockResolvedValueOnce();
+
+      await store.patch({ locale });
+
+      expect(store.settings.locale).toBe(locale);
+      expect(persistence.writeSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ locale }),
+      );
+    },
+  );
+
   it('does not change memory state when persistence fails', async () => {
     const store = useSettingsStore();
     const before = JSON.parse(JSON.stringify(store.settings)) as Settings;

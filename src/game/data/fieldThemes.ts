@@ -20,10 +20,18 @@ export const fieldThemes = [
     name: {
       ko: '기본 황무지',
       en: 'Classic Wastes',
+      ja: 'クラシック荒野',
+      'zh-Hans': '经典荒原',
+      es: 'Yermo clásico',
+      fr: 'Terres classiques',
     },
     description: {
       ko: '차분한 황토 지형',
       en: 'Muted earthen terrain',
+      ja: '落ち着いた土色の地形',
+      'zh-Hans': '色调沉稳的土质地形',
+      es: 'Terreno terroso de tonos suaves',
+      fr: 'Terrain terreux aux tons discrets',
     },
   },
   {
@@ -32,10 +40,18 @@ export const fieldThemes = [
     name: {
       ko: '별빛 황무지',
       en: 'Starlit Wastes',
+      ja: '星明かりの荒野',
+      'zh-Hans': '星光荒原',
+      es: 'Yermo estrellado',
+      fr: 'Terres étoilées',
     },
     description: {
       ko: '청록과 보라빛이 스민 지형',
       en: 'Terrain veined with teal and violet',
+      ja: 'ティールと紫が脈打つ地形',
+      'zh-Hans': '青绿与紫色交织的地形',
+      es: 'Terreno surcado de verde azulado y violeta',
+      fr: 'Terrain veiné de turquoise et de violet',
     },
   },
 ] as const satisfies readonly FieldTheme[];

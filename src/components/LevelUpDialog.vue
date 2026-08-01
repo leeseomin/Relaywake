@@ -34,11 +34,11 @@ const emit = defineEmits<{ select: [id: AbilityId] }>();
         >
           <span class="upgrade-index">0{{ index + 1 }}</span>
           <span class="upgrade-icon"><img :src="choice.iconUrl" alt="" /></span>
-          <span class="upgrade-type">{{ choice.category }}</span>
+          <span class="upgrade-type">{{ t(props.locale, choice.category === 'active' ? 'activeAbility' : 'passiveAbility') }}</span>
           <strong>{{ choice.name }}</strong>
           <span class="upgrade-level">LV {{ choice.level }} → {{ choice.nextLevel }}</span>
           <p>{{ choice.description }}</p>
-          <i>{{ index + 1 }} · SELECT →</i>
+          <i>{{ index + 1 }} · {{ t(props.locale, 'select') }} →</i>
         </button>
       </div>
     </section>

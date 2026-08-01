@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { AbilityIdSchema, CharacterIdSchema } from '../game/data/schemas';
+import { locales } from '../game/data/localization';
 
 export const ProfileSchema = z.object({
   id: z.literal('main'),
@@ -14,7 +15,7 @@ export const ProfileSchema = z.object({
 
 export const SettingsSchema = z.object({
   id: z.literal('main'),
-  locale: z.enum(['ko', 'en']),
+  locale: z.enum(locales),
   soundEnabled: z.boolean(),
   screenShake: z.boolean(),
   damageNumbers: z.boolean(),

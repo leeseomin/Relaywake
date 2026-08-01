@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { Settings } from '../persistence/schemas';
-import { t } from '../game/data/localization';
+import { localeOptions, t } from '../game/data/localization';
 
 const props = defineProps<{ settings: Settings }>();
 const emit = defineEmits<{
@@ -29,7 +29,7 @@ function confirmReset(): void {
 
     <div class="settings-card">
       <label class="setting-row">
-        <span><strong>{{ t(props.settings.locale, 'sound') }}</strong><small>Web Audio synthesized feedback</small></span>
+        <span><strong>{{ t(props.settings.locale, 'sound') }}</strong><small>{{ t(props.settings.locale, 'soundHelp') }}</small></span>
         <input
           type="checkbox"
           :checked="props.settings.soundEnabled"
@@ -37,7 +37,7 @@ function confirmReset(): void {
         />
       </label>
       <label class="setting-row">
-        <span><strong>{{ t(props.settings.locale, 'screenShake') }}</strong><small>Camera impact feedback</small></span>
+        <span><strong>{{ t(props.settings.locale, 'screenShake') }}</strong><small>{{ t(props.settings.locale, 'screenShakeHelp') }}</small></span>
         <input
           type="checkbox"
           :checked="props.settings.screenShake"
@@ -45,7 +45,7 @@ function confirmReset(): void {
         />
       </label>
       <label class="setting-row">
-        <span><strong>{{ t(props.settings.locale, 'damageNumbers') }}</strong><small>Floating combat text</small></span>
+        <span><strong>{{ t(props.settings.locale, 'damageNumbers') }}</strong><small>{{ t(props.settings.locale, 'damageNumbersHelp') }}</small></span>
         <input
           type="checkbox"
           :checked="props.settings.damageNumbers"
@@ -53,10 +53,16 @@ function confirmReset(): void {
         />
       </label>
       <div class="setting-row">
-        <span><strong>{{ t(props.settings.locale, 'locale') }}</strong><small>UI and upgrade text</small></span>
-        <div class="segmented-control" role="group" :aria-label="t(props.settings.locale, 'locale')">
-          <button type="button" :class="{ active: props.settings.locale === 'ko' }" @click="emit('patch', { locale: 'ko' })">한국어</button>
-          <button type="button" :class="{ active: props.settings.locale === 'en' }" @click="emit('patch', { locale: 'en' })">EN</button>
+        <span><strong>{{ t(props.settings.locale, 'locale') }}</strong><small>{{ t(props.settings.locale, 'localeHelp') }}</small></span>
+        <div class="segmented-control language-control" role="group" :aria-label="t(props.settings.locale, 'locale')">
+          <button
+            v-for="option in localeOptions"
+            :key="option.value"
+            type="button"
+            :lang="option.value"
+            :class="{ active: props.settings.locale === option.value }"
+            @click="emit('patch', { locale: option.value })"
+          >{{ option.label }}</button>
         </div>
       </div>
     </div>
@@ -64,7 +70,7 @@ function confirmReset(): void {
     <div class="settings-danger">
       <div>
         <strong>IndexedDB / Dexie</strong>
-        <p v-if="!confirmingReset">Runs, preferences and progression are stored only in this browser.</p>
+        <p v-if="!confirmingReset">{{ t(props.settings.locale, 'resetStorageHelp') }}</p>
         <p v-else class="danger-copy" role="alert">{{ t(props.settings.locale, 'resetWarning') }}</p>
       </div>
       <button v-if="!confirmingReset" type="button" @click="confirmingReset = true">

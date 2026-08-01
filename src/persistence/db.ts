@@ -10,6 +10,7 @@ import {
   type RunRow,
   type Settings,
 } from './schemas';
+import { isLocale } from '../game/data/localization';
 
 export const DATABASE_NAME = 'c2-nightfall';
 export const DATABASE_VERSION = 2;
@@ -226,7 +227,7 @@ function migrateSettings(value: unknown): Settings | null {
   const fallback = defaultSettings();
   const candidate = {
     id: 'main',
-    locale: value.locale === 'ko' || value.locale === 'en' ? value.locale : fallback.locale,
+    locale: isLocale(value.locale) ? value.locale : fallback.locale,
     soundEnabled: typeof value.soundEnabled === 'boolean'
       ? value.soundEnabled
       : fallback.soundEnabled,

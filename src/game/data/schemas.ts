@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import { locales } from './localization';
+
+export const LocalizedTextSchema = z.record(
+  z.enum(locales),
+  z.string().min(1),
+);
 
 export const AbilityIdSchema = z.enum([
   'machineGun',
@@ -78,8 +84,8 @@ export const AbilityBonusSchema = z.object({
 
 export const AbilityDefinitionSchema = z.object({
   id: AbilityIdSchema,
-  name: z.object({ ko: z.string().min(1), en: z.string().min(1) }),
-  description: z.object({ ko: z.string().min(1), en: z.string().min(1) }),
+  name: LocalizedTextSchema,
+  description: LocalizedTextSchema,
   iconKey: z.string().min(1),
   category: z.enum(['active', 'passive']),
   behavior: AbilityBehaviorSchema,
@@ -90,8 +96,8 @@ export const AbilityDefinitionSchema = z.object({
 
 export const CharacterDefinitionSchema = z.object({
   id: CharacterIdSchema,
-  name: z.object({ ko: z.string().min(1), en: z.string().min(1) }),
-  description: z.object({ ko: z.string().min(1), en: z.string().min(1) }),
+  name: LocalizedTextSchema,
+  description: LocalizedTextSchema,
   spriteKey: z.string().min(1),
   // Integer scale keeps every 24px texel exactly three screen pixels wide. A fractional scale
   // cannot divide evenly, so nearest-neighbour sampling reshuffles texel widths as the sprite

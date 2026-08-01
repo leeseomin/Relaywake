@@ -47,9 +47,9 @@ function statWidth(value: number, min: number, max: number): string {
         <button
           class="icon-button menu-settings-button"
           type="button"
-          aria-label="Settings"
+          :aria-label="t(props.locale, 'settings')"
           @click="emit('settings')"
-        >SETTINGS</button>
+        >{{ t(props.locale, 'settings').toLocaleUpperCase(props.locale) }}</button>
         <a
           class="icon-button github-link"
           href="https://github.com/leeseomin/Relaywake"
@@ -75,7 +75,7 @@ function statWidth(value: number, min: number, max: number): string {
           <h2>{{ t(props.locale, 'chooseCharacter') }}</h2>
         </div>
         <div class="coin-balance">
-          <span>◆</span>{{ props.coins.toLocaleString() }}<small>COINS</small>
+          <span>◆</span>{{ props.coins.toLocaleString() }}<small>{{ t(props.locale, 'coins').toLocaleUpperCase(props.locale) }}</small>
         </div>
       </div>
 

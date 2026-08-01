@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { gameEvents } from './app/gameEvents';
 import { resolveGameplayHotkey } from './app/hotkeys';
 import GameHud from './components/GameHud.vue';
@@ -37,6 +37,10 @@ const isGameplayVisible = computed(() => ['playing', 'levelUp', 'paused', 'gameO
 const cleanups: Array<() => void> = [];
 let removeTestBridge: (() => void) | null = null;
 let testBridgeGeneration = 0;
+
+watch(locale, (value) => {
+  document.documentElement.lang = value;
+}, { immediate: true });
 
 onMounted(async () => {
   window.addEventListener('keydown', handleGlobalKeydown);

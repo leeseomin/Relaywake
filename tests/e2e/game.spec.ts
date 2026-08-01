@@ -39,6 +39,34 @@ test('shows the RELAYWAKE brand in English without legacy project labels', async
   }
 });
 
+test('switches to each added language and persists the selection', async ({ page }) => {
+  await page.getByRole('button', { name: 'Settings' }).click();
+
+  const languages = [
+    { button: '日本語', locale: 'ja', heading: '設定' },
+    { button: '简体中文', locale: 'zh-Hans', heading: '设置' },
+    { button: 'Español', locale: 'es', heading: 'Ajustes' },
+    { button: 'Français', locale: 'fr', heading: 'Paramètres' },
+  ] as const;
+
+  for (const language of languages) {
+    await page.getByRole('button', { name: language.button, exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(language.heading);
+    await expect(page.locator('html')).toHaveAttribute('lang', language.locale);
+    await expect.poll(async () => (await readStoredGameData(page)).settings?.locale)
+      .toBe(language.locale);
+  }
+
+  await page.locator('.settings-back').click();
+  await expect(page.getByTestId('start-run')).toContainText('Lancer l’opération');
+  await expect(page.getByTestId('character-blue')).toContainText('Éclaireuse Roseglass');
+  await expect(page.getByTestId('field-theme-classic')).toContainText('Terres classiques');
+
+  await page.reload();
+  await expect(page.getByTestId('start-run')).toContainText('Lancer l’opération');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+});
+
 test('keeps the loadout visible on a wide, short display', async ({ page }) => {
   await page.setViewportSize({ width: 2048, height: 911 });
   await page.reload();
