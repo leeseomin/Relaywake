@@ -85,8 +85,21 @@ npm run check
 
 ## Credits and licenses
 
-RELAYWAKE is developed and maintained by **leeseomin**. It is a web reimplementation inspired by [matthiasbroske/VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone).
+### Project
 
-Copyright (c) 2024 Matthias Broske. Copyright (c) 2026 leeseomin. The original copyright notice and MIT license terms are preserved in [`LICENSE`](LICENSE).
+**RELAYWAKE** is developed and maintained by [**leeseomin**](https://github.com/leeseomin). It is a browser-based reimplementation inspired by [VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone) by Matthias Broske.
 
-Asset provenance, third-party credits, and license evidence are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the canonical manifest at [`src/game/assets.ts`](src/game/assets.ts). The Unity-to-web implementation mapping is recorded in [`MIGRATION.md`](MIGRATION.md).
+### License
+
+RELAYWAKE is distributed under the [`MIT License`](LICENSE). The original project's copyright notice and MIT license terms are retained.
+
+| Work | Copyright |
+| --- | --- |
+| VampireSurvivorsClone | © 2024 Matthias Broske |
+| RELAYWAKE | © 2026 leeseomin |
+
+### Documentation
+
+- [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) — Asset provenance, third-party credits, and license evidence
+- [`src/game/assets.ts`](src/game/assets.ts) — Canonical asset manifest
+- [`MIGRATION.md`](MIGRATION.md) — Unity-to-web implementation mapping
