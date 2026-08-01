@@ -80,31 +80,22 @@ npm run check
 
 ## Credits and licenses
 
-### Project
+### Credits and provenance
 
-**RELAYWAKE** is developed and maintained by [**leeseomin**](https://github.com/leeseomin). It began as an independent browser port and substantial refactor of [VampireSurvivorsClone at commit `01f8c76`](https://github.com/matthiasbroske/VampireSurvivorsClone/tree/01f8c76e40f52b853117f436d6d3d08f80a41506) by Matthias Broske. The upstream project provides part of the gameplay and asset foundation; RELAYWAKE is not a visual or interface replica of it.
+**RELAYWAKE** is developed and maintained by [**leeseomin**](https://github.com/leeseomin). It began as a browser adaptation and substantial refactor of [VampireSurvivorsClone at commit `01f8c76`](https://github.com/matthiasbroske/VampireSurvivorsClone/tree/01f8c76e40f52b853117f436d6d3d08f80a41506) by Matthias Broske.
 
-RELAYWAKE adapts gameplay rules and progression data from the upstream Unity project into a new Vue, Phaser, and TypeScript implementation. Its retained and replaced material is deliberately separated:
+- **Created for RELAYWAKE:** the Vue and Phaser web implementation, UI and persistence layer, name and visual identity, pixel art for all five playable characters and all eight enemy and boss sprites, the theme-selection screen and two base field textures, and the fire-orb weapon.
+- **Adapted or retained from upstream:** gameplay and progression rules, the existing weapon set and weapon images, and selected rendering, pickup, and icon assets.
 
-- Every currently visible playable character has RELAYWAKE-original pixel art.
-- Every regular enemy, mini-boss, and final boss has been replaced with RELAYWAKE-original pixel art.
-- The field presentation was rebuilt around a RELAYWAKE-designed theme-selection screen and two RELAYWAKE base field textures. Selected upstream tint and noise textures remain part of the rendering pipeline and are credited separately.
-- The existing upstream weapons and their image assets are retained, with their runtime behavior implemented inside the new web architecture. One RELAYWAKE-specific weapon, the fire orb, was added.
-- The game UI layout, interaction design, and styling were created for this project, together with the RELAYWAKE name and visual identity. Selected retained generic icon textures remain separately credited.
-
-The web runtime, interface, persistence layer, tests, and RELAYWAKE-specific artwork were created for RELAYWAKE.
-
-VampireSurvivorsClone is [described by its author](https://matthiasbroske.github.io/vampire-survivors.html) as a from-scratch Unity game inspired by poncle's [Vampire Survivors](https://poncle.games/vampire-survivors). RELAYWAKE is not affiliated with or endorsed by poncle. Vampire Survivors is referenced only to identify the upstream project's stated inspiration.
+VampireSurvivorsClone is [described by its author](https://matthiasbroske.github.io/vampire-survivors.html) as a from-scratch Unity game inspired by poncle's [Vampire Survivors](https://poncle.games/vampire-survivors). RELAYWAKE is not affiliated with or endorsed by poncle.
 
 ### License
 
-Except for third-party materials identified in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), RELAYWAKE-authored code, modifications, and project-created assets are licensed under the [`MIT License`](LICENSE).
+Except for third-party materials identified in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), RELAYWAKE-authored code, modifications, and original assets are licensed under the [`MIT License`](LICENSE). Adapted portions of VampireSurvivorsClone retain the upstream MIT terms and copyright notice included in the root [`LICENSE`](LICENSE).
 
-Portions adapted from VampireSurvivorsClone remain subject to its MIT License and copyright notice, both of which are retained in the root [`LICENSE`](LICENSE). Third-party materials remain subject to their respective license terms.
-
-| Contribution | Copyright |
+| Material | Copyright |
 | --- | --- |
 | Portions adapted from VampireSurvivorsClone, excluding separately credited assets | © 2024 Matthias Broske |
 | RELAYWAKE modifications and original content | © 2026 leeseomin |
 
-Detailed asset provenance, credits, and license information are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and [`src/game/assets.ts`](src/game/assets.ts).
+See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for detailed asset provenance, credits, and license terms.
