@@ -44,4 +44,4 @@ src/
 
 ## 자산과 라이선스
 
-원본 저장소의 MIT 라이선스를 유지하며 `LICENSE`에 포함했습니다. `public/assets`에는 원본 프로젝트 자산과 Relaywake 전용 생성·재구성 자산이 함께 포함됩니다. 자세한 내용은 `THIRD_PARTY_NOTICES.md`, `MIGRATION.md`, `VALIDATION.md`를 참조하십시오.
+원본 저장소의 MIT 라이선스를 유지하며 `LICENSE`에 포함했습니다. `public/assets`에는 원본 프로젝트 자산과 Relaywake 전용 생성·재구성 자산이 함께 포함됩니다. 자세한 내용은 `THIRD_PARTY_NOTICES.md`와 `MIGRATION.md`를 참조하십시오.
