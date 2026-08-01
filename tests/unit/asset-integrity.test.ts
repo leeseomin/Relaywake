@@ -200,7 +200,7 @@ describe('asset manifest integrity', () => {
     }
   });
 
-  it('bakes generator-derived enemy sheets to their final scale-1 frame sizes', () => {
+  it('keeps final enemy sheets at their runtime frame sizes', () => {
     for (const [key, frameSize] of BAKED_ENEMY_FRAMES) {
       const asset = getAsset(key);
 
@@ -212,9 +212,9 @@ describe('asset manifest integrity', () => {
       });
       expect(asset.source, key).toMatchObject({
         kind: 'project-derived',
-        path: '../monster-generator.html',
+        path: `public${asset.path}`,
       });
-      expect(asset.source.modified, key).toContain('scripts/generate-enemy-sprites.mjs');
+      expect(asset.source.modified, key).toContain('final runtime artwork');
     }
   });
 
@@ -280,13 +280,16 @@ describe('asset manifest integrity', () => {
           expect(asset.source.path).toBeNull();
           expect(asset.source.modified).toContain('OpenAI built-in image generation');
         } else {
-          expect([
-            'kite-fire-v2.html',
-            'pixel-character-maker-mongle.html',
-            '../monster-generator.html',
-            'public/assets/backgrounds/dirt.png',
-            'public/assets/backgrounds/dirt2.png',
-          ]).toContain(asset.source.path);
+          if (asset.path.startsWith('/assets/enemies/')) {
+            expect(asset.source.path).toBe(`public${asset.path}`);
+          } else {
+            expect([
+              'kite-fire-v2.html',
+              'pixel-character-maker-mongle.html',
+              'public/assets/backgrounds/dirt.png',
+              'public/assets/backgrounds/dirt2.png',
+            ]).toContain(asset.source.path);
+          }
           expect(asset.source.modified?.length ?? 0).toBeGreaterThan(0);
         }
       }

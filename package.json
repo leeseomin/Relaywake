@@ -10,7 +10,6 @@
   },
   "scripts": {
     "dev": "vite",
-    "generate:enemies": "node scripts/generate-enemy-sprites.mjs",
     "build": "vue-tsc -b && vite build",
     "build:e2e": "vite build --mode e2e",
     "build:bundle": "vite build",

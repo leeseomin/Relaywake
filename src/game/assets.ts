@@ -267,8 +267,8 @@ export const assetManifest = [
     frame: { width: 54, height: 54, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Crawler seed 104729; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 54px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/alien.png',
+      'Project-created four-frame Crawler sprite sheet retained as final runtime artwork (original seed 104729).',
     ),
   },
   {
@@ -279,8 +279,8 @@ export const assetManifest = [
     frame: { width: 56, height: 56, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Crab seed 130363; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 56px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/crab.png',
+      'Project-created four-frame Crab sprite sheet retained as final runtime artwork (original seed 130363).',
     ),
   },
   {
@@ -291,8 +291,8 @@ export const assetManifest = [
     frame: { width: 58, height: 58, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Brute seed 155921; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 58px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/brute.png',
+      'Project-created four-frame Brute sprite sheet retained as final runtime artwork (original seed 155921).',
     ),
   },
   {
@@ -303,8 +303,8 @@ export const assetManifest = [
     frame: { width: 56, height: 56, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Wizard seed 196613; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 56px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/wizard.png',
+      'Project-created four-frame Wizard sprite sheet retained as final runtime artwork (original seed 196613).',
     ),
   },
   {
@@ -315,8 +315,8 @@ export const assetManifest = [
     frame: { width: 56, height: 56, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Nail Head seed 262147; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 56px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/nailhead.png',
+      'Project-created four-frame Nail Head sprite sheet retained as final runtime artwork (original seed 262147).',
     ),
   },
   {
@@ -327,8 +327,8 @@ export const assetManifest = [
     frame: { width: 58, height: 58, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Gravity Bomber seed 327673; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 58px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/gravity.png',
+      'Project-created four-frame Gravity Bomber sprite sheet retained as final runtime artwork (original seed 327673).',
     ),
   },
   {
@@ -339,8 +339,8 @@ export const assetManifest = [
     frame: { width: 54, height: 54, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Mini-boss seed 393241; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 54px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/miniboss.png',
+      'Project-created four-frame mini-boss sprite sheet retained as final runtime artwork (original seed 393241).',
     ),
   },
   {
@@ -351,8 +351,8 @@ export const assetManifest = [
     frame: { width: 112, height: 112, count: 4 },
     consumers: ['phaser'],
     ...projectDerived(
-      '../monster-generator.html',
-      'Final boss seed 524287; generated on a 32px logical grid, sampled at phases 0/1/3/4, and nearest-neighbour baked to four 112px frames by scripts/generate-enemy-sprites.mjs.',
+      'public/assets/enemies/boss.png',
+      'Project-created four-frame final-boss sprite sheet retained as final runtime artwork (original seed 524287).',
     ),
   },
 
