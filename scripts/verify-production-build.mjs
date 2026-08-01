@@ -9,6 +9,22 @@ const forbiddenJavaScriptMarkers = [
   'testKillFinalBoss',
   '20260729',
 ];
+const requiredNoticeMarkers = new Map([
+  ['LICENSE.txt', [
+    'Copyright (c) 2024 Matthias Broske',
+    'Copyright (c) 2026 leeseomin',
+    'Permission is hereby granted, free of charge',
+  ]],
+  ['THIRD_PARTY_LICENSES.txt', [
+    'Copyright (c) 2018-present, Yuxi (Evan) You',
+    'Copyright (c) 2026 Richard Davey, Phaser Studio Inc.',
+    'Copyright (c) 2019-present Eduardo San Martin Morote',
+    'Copyright (c) 2025 Colin McDonnell',
+    'Apache License',
+    'Dexie.js',
+    'Copyright (c) 2014-2017 David Fahlander',
+  ]],
+]);
 
 function walkFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -23,6 +39,19 @@ if (!files.some((path) => relative(outputDirectory, path) === 'index.html')) {
 }
 if (files.some((path) => /testBridge/i.test(relative(outputDirectory, path)))) {
   throw new Error('Production output contains an E2E test-bridge chunk.');
+}
+
+for (const [outputPath, markers] of requiredNoticeMarkers) {
+  const path = resolve(outputDirectory, outputPath);
+  if (!files.includes(path)) {
+    throw new Error(`Production output does not contain ${outputPath}.`);
+  }
+  const source = readFileSync(path, 'utf8');
+  for (const marker of markers) {
+    if (!source.includes(marker)) {
+      throw new Error(`${outputPath} does not contain the required notice: ${marker}`);
+    }
+  }
 }
 
 for (const path of files) {

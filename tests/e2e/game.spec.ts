@@ -41,6 +41,10 @@ test('shows the RELAYWAKE brand in English without legacy project labels', async
 
 test('switches to each added language and persists the selection', async ({ page }) => {
   await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('link', { name: 'Third-party licenses' })).toHaveAttribute(
+    'href',
+    '/THIRD_PARTY_LICENSES.txt',
+  );
 
   const languages = [
     { button: '日本語', locale: 'ja', heading: '設定' },

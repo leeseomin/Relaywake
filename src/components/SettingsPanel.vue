@@ -82,6 +82,32 @@ function confirmReset(): void {
       </div>
     </div>
 
+    <a
+      class="settings-license-link"
+      href="/THIRD_PARTY_LICENSES.txt"
+      target="_blank"
+      rel="noopener noreferrer"
+    >{{ t(props.settings.locale, 'thirdPartyLicenses') }} ↗</a>
+
     <button class="primary-action settings-back" type="button" @click="emit('back')">{{ t(props.settings.locale, 'back') }}</button>
   </section>
 </template>
+
+<style scoped>
+.settings-license-link {
+  width: min(920px, 100%);
+  margin: 18px auto 0;
+  color: var(--muted);
+  font: 700 9px/1.4 "Space Mono", monospace;
+  letter-spacing: .12em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color .2s;
+}
+
+.settings-license-link:hover,
+.settings-license-link:focus-visible {
+  color: var(--accent);
+}
+</style>
