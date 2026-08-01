@@ -4,7 +4,9 @@
 
 ### [▶ Play RELAYWAKE](https://relaywake.pages.dev/)
 
-### [▶ Watch the demo](https://youtu.be/6N-1Kv-qeXk)
+### Demo
+
+[![Watch the RELAYWAKE demo](https://img.youtube.com/vi/6N-1Kv-qeXk/maxresdefault.jpg)](https://youtu.be/6N-1Kv-qeXk)
 
 ---
 
