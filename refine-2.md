@@ -74,49 +74,6 @@
 
 ---
 
-## 3. CI와 배포 게이트 복원
-
-### 필수 변경
-
-main 브랜치의 프로덕션 배포는 다음 검증을 모두 통과한 커밋에서만 실행한다.
-
-```text
-npm ci
-→ typecheck
-→ unit test
-→ E2E 전용 빌드
-→ desktop Chromium E2E
-→ mobile WebKit E2E
-→ 실제 production 빌드
-→ production E2E 브리지 부재 검사
-→ asset·bundle 크기 검사
-→ Wrangler dry-run
-→ Cloudflare 배포
-→ 배포 URL smoke test
-```
-
-추가 요구사항:
-
-- `package-lock.json`과 `packageManager`에 선언된 npm 버전을 사용한다.
-- CI의 Node 버전을 명시적으로 고정한다.
-- 테스트 실패 상태에서는 배포 명령이 실행되지 않아야 한다.
-- PR에는 배포하지 않더라도 동일한 빌드·검증 게이트를 적용한다.
-- 배포된 커밋 SHA와 앱 버전을 추적할 수 있어야 한다.
-
-### 배포 URL 스모크 테스트
-
-최소한 다음을 검사한다.
-
-- 첫 화면 렌더링과 Phaser 게임 시작
-- 모든 핵심 이미지의 HTTP 200
-- 브라우저 콘솔 오류와 처리되지 않은 Promise 오류 부재
-- `?e2e=1`로 프로덕션 규칙이 바뀌지 않음
-- `window.__C2_GAME__` 부재
-- IndexedDB 프로필 생성·저장·재로딩
-- 작은 모바일 화면에서 시작·이동·일시정지 가능
-
----
-
 ## 4. IndexedDB 복구·마이그레이션과 최종 Origin 확정
 
 ### 현재 문제
@@ -194,7 +151,6 @@ npm ci
 - [ ] E2E 빌드와 프로덕션 빌드가 분리되어 있다.
 - [ ] `wrangler.jsonc`가 `dist`를 Workers Static Assets로 배포한다.
 - [ ] Vite base와 게임 에셋 경로가 도메인 루트 배포에 맞는다.
-- [ ] CI의 모든 검증을 통과해야만 main 배포가 실행된다.
 - [ ] 실제 배포 URL에서 핵심 화면·게임·에셋 스모크 테스트가 통과한다.
 - [ ] 손상·구버전 IndexedDB가 앱 시작을 반복적으로 막지 않는다.
 - [ ] 최종 커스텀 도메인과 DB 마이그레이션 정책이 확정되어 있다.
