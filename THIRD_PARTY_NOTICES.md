@@ -13,11 +13,12 @@ that Unity project into a new Vue, Phaser, and TypeScript implementation.
 The current presentation does not use the upstream playable-character or enemy
 sprites: all five visible playable characters and all eight enemy and boss
 sprites are RELAYWAKE-specific pixel art. RELAYWAKE also adds its own field
-theme-selection interface, two base field textures, a fire-orb weapon, complete
-UI and interaction design, name, and visual identity. The existing upstream
-weapons and their image assets otherwise remain in use, with their runtime
-behavior implemented inside the web architecture. Selected upstream pickup,
-icon, tint, and noise textures are documented in the asset manifest.
+theme-selection interface, the alternate Starlit Wastes field texture, a
+fire-orb weapon, complete UI and interaction design, name, and visual identity.
+The default Classic Wastes field texture, existing upstream weapons, and their
+image assets remain in use, with their runtime behavior implemented inside the
+web architecture. Selected upstream pickup, icon, tint, and noise textures are
+documented in the asset manifest.
 
 VampireSurvivorsClone is
 [described by its author](https://matthiasbroske.github.io/vampire-survivors.html)
@@ -33,13 +34,17 @@ are retained in the root [`LICENSE`](LICENSE). The upstream README separately
 credits Kenney and Bonsaiheldin for art, so this notice does not assume that
 Matthias Broske owns every image distributed by the upstream project.
 
-The canonical [`asset manifest`](src/game/assets.ts) currently identifies 25
+The canonical [`asset manifest`](src/game/assets.ts) currently identifies 26
 files as upstream assets. It records each upstream path, the pinned commit,
 known transformations, attribution confidence, and license evidence. Unless a
 more specific source is identified below, those files are redistributed on the
 basis of the upstream repository's license and credit record; their exact
 original art source and file-level licensing have not been independently
 verified.
+
+`public/assets/backgrounds/dirt.png`, used by the default Classic Wastes theme,
+is retained byte-for-byte from upstream
+`Assets/Textures/Backgrounds/DirtTile.png` at the pinned commit.
 
 The two coin textures are from Bonsaiheldin's
 [Gold treasure icons 16x16](https://opengameart.org/content/gold-treasure-icons-16x16)
@@ -50,14 +55,14 @@ magnet's exact original pack URL.
 
 ## RELAYWAKE-specific artwork
 
-The asset manifest currently identifies 16 `project-derived` files and two
-OpenAI-assisted `generated` files. These 18 assets were created specifically
+The asset manifest currently identifies 15 `project-derived` files and two
+OpenAI-assisted `generated` files. These 17 assets were created specifically
 for RELAYWAKE by leeseomin and are made available under the root MIT License to
 the extent that leeseomin holds applicable rights. They are not attributed to
 the upstream repository.
 
-- `public/assets/backgrounds/dirt.png` and `dirt2.png` are RELAYWAKE field
-  textures supplied and selected by leeseomin.
+- `public/assets/backgrounds/dirt2.png` is the RELAYWAKE-created alternate field
+  texture used by the Starlit Wastes theme.
 - All five files under `public/assets/characters` are RELAYWAKE character art.
   `roseglass.png`, `startail.png`, `moonhare.png`, and `dunehorn.png` were
   exported with fixed seeds and explicit part selections from a development

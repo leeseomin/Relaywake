@@ -162,10 +162,7 @@ export const assetManifest = [
     format: 'png',
     dimensions: { width: 512, height: 512 },
     consumers: ['phaser', 'menu-css'],
-    ...projectDerived(
-      'public/assets/backgrounds/dirt.png',
-      '512×512 earth-field texture created and selected by leeseomin for the default RELAYWAKE terrain.',
-    ),
+    ...upstream('Assets/Textures/Backgrounds/DirtTile.png'),
   },
   {
     key: 'background-dirt-starlit',

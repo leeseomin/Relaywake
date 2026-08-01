@@ -286,7 +286,6 @@ describe('asset manifest integrity', () => {
             expect([
               'kite-fire-v2.html',
               'pixel-character-maker-mongle.html',
-              'public/assets/backgrounds/dirt.png',
               'public/assets/backgrounds/dirt2.png',
             ]).toContain(asset.source.path);
           }
@@ -294,6 +293,19 @@ describe('asset manifest integrity', () => {
         }
       }
     }
+
+    expect(getAsset('background-dirt').source).toMatchObject({
+      kind: 'upstream',
+      path: 'Assets/Textures/Backgrounds/DirtTile.png',
+      commit: '01f8c76e40f52b853117f436d6d3d08f80a41506',
+    });
+    expect(getAsset('background-dirt-starlit').source).toMatchObject({
+      kind: 'project-derived',
+      path: 'public/assets/backgrounds/dirt2.png',
+    });
+    expect(assetManifest.filter((asset) => asset.source.kind === 'upstream')).toHaveLength(26);
+    expect(assetManifest.filter((asset) => asset.source.kind === 'project-derived')).toHaveLength(15);
+    expect(assetManifest.filter((asset) => asset.source.kind === 'generated')).toHaveLength(2);
 
     for (const key of ['pickup-coin', 'pickup-coin-10'] as const) {
       const coin = getAsset(key);

@@ -7,10 +7,10 @@ frames, upstream or internal provenance, modifications, and license evidence.
 
 ## `dirt-red.png` optimization
 
-The reddish dirt layer is rendered over the 512×512 base dirt texture at
-`alpha = 0.11` with additive blending. The original 2048×2048 source was
-downscaled with a wrap-aware Lanczos filter, stripped of ancillary metadata,
-and retained as lossless RGBA PNG.
+The reddish dirt layer is rendered over the upstream 512×512 `dirt.png` base
+texture at `alpha = 0.11` with additive blending. The original 2048×2048 source
+was downscaled with a wrap-aware Lanczos filter, stripped of ancillary
+metadata, and retained as lossless RGBA PNG.
 
 | Metric | Before | After | Reduction |
 | --- | ---: | ---: | ---: |
