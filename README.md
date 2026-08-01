@@ -6,31 +6,13 @@
 
 ---
 
-## At a glance
-
-| | |
-| --- | --- |
-| **Platform** | Desktop and mobile web |
-| **Run length** | 10 minutes |
-| **Operatives** | 5 characters with distinct starting weapons and stats |
-| **Upgrades** | 21 active and passive abilities |
-| **Persistence** | Local profiles, settings, coins, and run history in IndexedDB |
-| **Languages** | English and Korean |
-
-## Highlights
-
-- Automatic weapons, shuriken, bleeding daggers, melee arcs, orbiting axes, lightsabers, machetes, grenades, bazookas, and persistent fire zones
-- Six regular enemy families with ranged, boomerang, and gravity attacks
-- Mid-run mini-boss and final boss encounters
-- Experience gems, coins, healing, magnets, bombs, and upgrade chests
-- Keyboard controls and a mobile virtual joystick
-- Configurable sound effects, screen shake, damage numbers, and language
-- Deterministic E2E builds kept separate from the production bundle
-- Schema-validated IndexedDB recovery that prevents malformed local data from blocking startup
-
 ## Gameplay
 
-Choose an operative and field theme, survive escalating enemy waves, combine upgrades, defeat the final boss, and carry earned coins into later runs. The level preserves the upstream project's 600-second timeline with progression-driven spawn rates, enemy probabilities, and health scaling.
+Choose one of five operatives and a field theme for a 10-minute run. Combine 21 active and passive upgrades while facing six enemy families, a mid-run mini-boss, and a final boss. Earned coins carry into later runs.
+
+Weapons attack automatically and range from shuriken and bleeding daggers to melee arcs, orbiting axes, grenades, bazookas, and persistent fire zones.
+
+RELAYWAKE supports keyboard and mobile controls, English and Korean, and local profiles, settings, and run history.
 
 ## Controls
 
@@ -45,23 +27,6 @@ Choose an operative and field theme, survive escalating enemy waves, combine upg
 
 - **Runtime:** Vue 3, Pinia, Phaser 4.2.1, TypeScript, Zod, and Dexie with IndexedDB
 - **Tooling:** Vite, Vitest, and Playwright
-
-## Project structure
-
-```text
-src/
-├─ app/                 # Typed Phaser-to-Vue events and app utilities
-├─ components/          # Menu, HUD, dialogs, settings, and touch controls
-├─ game/
-│  ├─ core/             # RNG, curves, XP, combat math, and shared types
-│  ├─ data/             # Schema-validated characters, enemies, abilities, and level data
-│  ├─ scenes/           # BootScene and SurvivorScene
-│  ├─ systems/          # Abilities, spawning, spatial queries, and object pools
-│  ├─ GameController.ts # Phaser lifecycle and Vue command boundary
-│  └─ sceneBridge.ts    # Runtime port for the active game scene
-├─ persistence/         # Dexie database and Zod persistence schemas
-└─ stores/              # Profile, settings, and session stores
-```
 
 ## Local development
 
