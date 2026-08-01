@@ -74,61 +74,36 @@ function statWidth(value: number, min: number, max: number): string {
           <p class="panel-kicker">01 / LOADOUT</p>
           <h2>{{ t(props.locale, 'chooseCharacter') }}</h2>
         </div>
-        <div class="coin-balance"><span>◆</span>{{ props.coins.toLocaleString() }}</div>
+        <div class="coin-balance">
+          <span>◆</span>{{ props.coins.toLocaleString() }}<small>COINS</small>
+        </div>
       </div>
 
       <div class="character-layout">
-        <div class="character-list" role="radiogroup" :aria-label="t(props.locale, 'chooseCharacter')">
-          <button
-            v-for="character in characters"
-            :key="character.id"
-            class="character-card"
-            :class="{ selected: selected === character.id, 'fire-master': character.id === 'fire' }"
-            :data-testid="`character-${character.id}`"
-            type="button"
-            role="radio"
-            :aria-checked="selected === character.id"
-            @click="selected = character.id"
-          >
-            <span
-              class="character-frame"
-              :style="{ backgroundImage: `url(${characterSprites[character.id]})` }"
-            ></span>
-            <span class="character-label">
-              <strong>{{ character.name[props.locale] }}</strong>
-              <small>{{ character.startingAbility }}</small>
-            </span>
-            <span class="selection-mark">{{ selected === character.id ? '●' : '○' }}</span>
-          </button>
-        </div>
-
-        <article v-if="selectedCharacter" class="character-detail">
-          <div class="detail-header">
-            <div>
-              <p class="detail-code">OPERATIVE / {{ characterCodes[selectedCharacter.id] }}</p>
-              <h3>{{ selectedCharacter.name[props.locale] }}</h3>
-            </div>
-            <span class="ready-chip">READY</span>
+        <div class="loadout-sidebar">
+          <div class="character-list" role="radiogroup" :aria-label="t(props.locale, 'chooseCharacter')">
+            <button
+              v-for="character in characters"
+              :key="character.id"
+              class="character-card"
+              :class="{ selected: selected === character.id, 'fire-master': character.id === 'fire' }"
+              :data-testid="`character-${character.id}`"
+              type="button"
+              role="radio"
+              :aria-checked="selected === character.id"
+              @click="selected = character.id"
+            >
+              <span
+                class="character-frame"
+                :style="{ backgroundImage: `url(${characterSprites[character.id]})` }"
+              ></span>
+              <span class="character-label">
+                <strong>{{ character.name[props.locale] }}</strong>
+                <small>{{ character.startingAbility }}</small>
+              </span>
+              <span class="selection-mark">{{ selected === character.id ? '●' : '○' }}</span>
+            </button>
           </div>
-          <p>{{ selectedCharacter.description[props.locale] }}</p>
-          <dl class="stats-grid">
-            <div>
-              <dt>HP</dt><dd><span :style="{ width: statWidth(selectedCharacter.maxHp, 80, 130) }"></span></dd>
-              <b>{{ selectedCharacter.maxHp }}</b>
-            </div>
-            <div>
-              <dt>SPD</dt><dd><span :style="{ width: statWidth(selectedCharacter.moveSpeed, 155, 210) }"></span></dd>
-              <b>{{ selectedCharacter.moveSpeed }}</b>
-            </div>
-            <div>
-              <dt>ARM</dt><dd><span :style="{ width: statWidth(selectedCharacter.armor, 0, 3) }"></span></dd>
-              <b>{{ selectedCharacter.armor }}</b>
-            </div>
-            <div>
-              <dt>LUCK</dt><dd><span :style="{ width: statWidth(selectedCharacter.luck, 0.8, 1.2) }"></span></dd>
-              <b>{{ selectedCharacter.luck.toFixed(2) }}</b>
-            </div>
-          </dl>
 
           <section class="field-selector">
             <div class="field-selector-heading">
@@ -166,6 +141,35 @@ function statWidth(value: number, min: number, max: number): string {
               </button>
             </div>
           </section>
+        </div>
+
+        <article v-if="selectedCharacter" class="character-detail">
+          <div class="detail-header">
+            <div>
+              <p class="detail-code">OPERATIVE / {{ characterCodes[selectedCharacter.id] }}</p>
+              <h3>{{ selectedCharacter.name[props.locale] }}</h3>
+            </div>
+            <span class="ready-chip">READY</span>
+          </div>
+          <p>{{ selectedCharacter.description[props.locale] }}</p>
+          <dl class="stats-grid">
+            <div>
+              <dt>HP</dt><dd><span :style="{ width: statWidth(selectedCharacter.maxHp, 80, 130) }"></span></dd>
+              <b>{{ selectedCharacter.maxHp }}</b>
+            </div>
+            <div>
+              <dt>SPD</dt><dd><span :style="{ width: statWidth(selectedCharacter.moveSpeed, 155, 210) }"></span></dd>
+              <b>{{ selectedCharacter.moveSpeed }}</b>
+            </div>
+            <div>
+              <dt>ARM</dt><dd><span :style="{ width: statWidth(selectedCharacter.armor, 0, 3) }"></span></dd>
+              <b>{{ selectedCharacter.armor }}</b>
+            </div>
+            <div>
+              <dt>LUCK</dt><dd><span :style="{ width: statWidth(selectedCharacter.luck, 0.8, 1.2) }"></span></dd>
+              <b>{{ selectedCharacter.luck.toFixed(2) }}</b>
+            </div>
+          </dl>
 
           <button
             class="primary-action start-operation-action"
