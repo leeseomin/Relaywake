@@ -49,6 +49,10 @@ Run the complete local release gate with:
 npm run check
 ```
 
+## Repository history
+
+Before public submission, the Git history was rewritten solely to remove generated test reports, duplicate archives and old snapshots, internal handoff notes, local filesystem paths, and personal email metadata. The original 69-commit development sequence, commit messages, dates, and application source tree were retained.
+
 ## Credits and licenses
 
 ### Credits and provenance
