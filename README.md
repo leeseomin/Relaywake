@@ -85,6 +85,8 @@ npm run check
 
 ## Credits and licenses
 
-RELAYWAKE is a web reimplementation inspired by [matthiasbroske/VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone). The upstream MIT license is preserved in [`LICENSE`](LICENSE).
+RELAYWAKE is developed and maintained by **leeseomin**. It is a web reimplementation inspired by [matthiasbroske/VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone).
+
+Copyright (c) 2024 Matthias Broske. Copyright (c) 2026 leeseomin. The original copyright notice and MIT license terms are preserved in [`LICENSE`](LICENSE).
 
 Asset provenance, third-party credits, and license evidence are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the canonical manifest at [`src/game/assets.ts`](src/game/assets.ts). The Unity-to-web implementation mapping is recorded in [`MIGRATION.md`](MIGRATION.md).
