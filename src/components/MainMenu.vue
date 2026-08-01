@@ -31,8 +31,6 @@ const characterCodes: Record<CharacterId, string> = {
   gray: 'DUNEHORN',
   fire: 'FIRE',
 };
-const menuNoiseStyle = { backgroundImage: `url(${assetPath('background-perlin')})` };
-
 function statWidth(value: number, min: number, max: number): string {
   return `${Math.round(((value - min) / (max - min)) * 60 + 32)}%`;
 }
@@ -40,14 +38,18 @@ function statWidth(value: number, min: number, max: number): string {
 
 <template>
   <section class="menu-screen">
-    <div class="menu-noise" :style="menuNoiseStyle" aria-hidden="true"></div>
-
     <div class="hero-grid">
       <div class="hero-copy">
         <p class="eyebrow">SURVIVE · ADAPT · OUTLAST</p>
         <h1>{{ t(props.locale, 'title') }}</h1>
       </div>
       <div class="hero-actions">
+        <button
+          class="icon-button menu-settings-button"
+          type="button"
+          aria-label="Settings"
+          @click="emit('settings')"
+        >SETTINGS</button>
         <a
           class="icon-button github-link"
           href="https://github.com/leeseomin/Relaywake"
@@ -63,12 +65,6 @@ function statWidth(value: number, min: number, max: number): string {
             />
           </svg>
         </a>
-        <button
-          class="icon-button menu-settings-button"
-          type="button"
-          aria-label="Settings"
-          @click="emit('settings')"
-        >SETTINGS</button>
       </div>
     </div>
 
