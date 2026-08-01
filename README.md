@@ -1,47 +1,103 @@
 # RELAYWAKE
 
-# Web Playground: [https://relaywake.pages.dev/](https://relaywake.pages.dev/)
+**A 10-minute browser survival-action game built with Vue, Phaser, and TypeScript.**
 
-[`VampireSurvivorsClone`](https://github.com/matthiasbroske/VampireSurvivorsClone)을 **Vite + Vue 3 + TypeScript(strict) + Phaser 4.2.1 + Pinia + Zod + Dexie + Vitest + Playwright** 구조로 다시 구현하고, 유닛을 새롭게 디자인했습니다.
+### [▶ Play RELAYWAKE](https://relaywake.pages.dev/)
 
-## 구현 범위
+---
 
-- 5종 캐릭터 선택과 서로 다른 시작 무기·기본 능력치
-- 원본 능력군을 바탕으로 한 21종 액티브/패시브 강화
-- 자동 사격, 수리검, 출혈 단검, 근접 부채꼴, 회전 도끼, 광선검, 마체테, 수류탄, 바주카, 화염 지대
-- 6계열 일반 적, 원거리/부메랑/중력 공격, 미니보스와 최종 보스
-- 원본 `Level 1.asset`의 600초 러닝타임, 300초 미니보스, 구간별 스폰율·등장 확률·체력 배율 이식
-- 경험치 보석, 코인, 회복, 자석, 폭탄, 상자
-- 키보드와 모바일 가상 조이스틱
-- 한국어/영어 UI, 효과음·화면 흔들림·피해 숫자 설정
-- Dexie 기반 로컬 프로필·설정·런 기록 저장
-- E2E 전용 결정론적 시드와 테스트 브리지
+## At a glance
 
-## 구조
+| | |
+| --- | --- |
+| **Platform** | Desktop and mobile web |
+| **Run length** | 10 minutes |
+| **Operatives** | 5 characters with distinct starting weapons and stats |
+| **Upgrades** | 21 active and passive abilities |
+| **Persistence** | Local profiles, settings, coins, and run history in IndexedDB |
+| **Languages** | English and Korean |
+
+## Highlights
+
+- Automatic weapons, shuriken, bleeding daggers, melee arcs, orbiting axes, lightsabers, machetes, grenades, bazookas, and persistent fire zones
+- Six regular enemy families with ranged, boomerang, and gravity attacks
+- Mid-run mini-boss and final boss encounters
+- Experience gems, coins, healing, magnets, bombs, and upgrade chests
+- Keyboard controls and a mobile virtual joystick
+- Configurable sound effects, screen shake, damage numbers, and language
+- Deterministic E2E builds kept separate from the production bundle
+- Schema-validated IndexedDB recovery that prevents malformed local data from blocking startup
+
+## Gameplay
+
+Choose an operative and field theme, survive escalating enemy waves, combine upgrades, defeat the final boss, and carry earned coins into later runs. The level preserves the original 600-second timeline, including the mini-boss at 300 seconds and progression-driven spawn rates, enemy probabilities, and health scaling.
+
+## Controls
+
+| Action | Keyboard / mouse | Mobile |
+| --- | --- | --- |
+| Move | `WASD` or arrow keys | Virtual joystick |
+| Pause / resume | `P`, `Esc`, or the HUD pause button | Pause button |
+| Choose an upgrade | `1`, `2`, `3`, or click a card | Tap a card |
+| Attack | Automatic | Automatic |
+
+## Technology
+
+- Vue 3 and Pinia for application UI and state
+- Phaser 4.2.1 for the real-time game runtime
+- TypeScript in strict mode
+- Zod for game-data and persistence validation
+- Dexie and IndexedDB for local persistence
+- Vite for development and production builds
+- Vitest and Playwright for automated validation
+
+## Project structure
 
 ```text
 src/
-├─ app/                 # Phaser ↔ Vue 타입 이벤트 버스
-├─ components/          # 메뉴, HUD, 레벨업, 일시정지, 결과, 터치 UI
+├─ app/                 # Typed Phaser-to-Vue events and app utilities
+├─ components/          # Menu, HUD, dialogs, settings, and touch controls
 ├─ game/
-│  ├─ core/             # RNG, 곡선, XP, 수학, 공용 타입
-│  ├─ data/             # Zod로 검증되는 캐릭터·적·능력·레벨 데이터
-│  ├─ scenes/           # BootScene, SurvivorScene
-│  ├─ systems/          # 능력, 스폰, 공간 해시, 오브젝트 풀
-│  ├─ GameController.ts # Phaser 수명주기와 Vue 명령 경계
-│  └─ sceneBridge.ts    # 순환 의존성을 피하는 런타임 포트
-├─ persistence/         # Dexie DB와 Zod 저장 스키마
-└─ stores/              # Pinia profile/settings/session stores
+│  ├─ core/             # RNG, curves, XP, combat math, and shared types
+│  ├─ data/             # Schema-validated characters, enemies, abilities, and level data
+│  ├─ scenes/           # BootScene and SurvivorScene
+│  ├─ systems/          # Abilities, spawning, spatial queries, and object pools
+│  ├─ GameController.ts # Phaser lifecycle and Vue command boundary
+│  └─ sceneBridge.ts    # Runtime port for the active game scene
+├─ persistence/         # Dexie database and Zod persistence schemas
+└─ stores/              # Profile, settings, and session stores
 ```
 
-## 조작
+## Local development
 
-- 이동: `WASD` 또는 방향키
-- 일시정지/재개: `P`, `Esc`, HUD의 `Ⅱ`
-- 레벨업 선택: 숫자키 `1`, `2`, `3` 또는 카드 클릭
-- 모바일: 왼쪽 가상 조이스틱, 오른쪽 일시정지 버튼
-- 공격: 자동
+Requirements: Node.js `^20.19.0 || >=22.12.0` and npm `>=10.9.2 <12`.
 
-## 자산과 라이선스
+```bash
+npm ci
+npm run dev
+```
 
-원본 저장소의 MIT 라이선스를 유지하며 `LICENSE`에 포함했습니다. `public/assets`에는 원본 프로젝트 자산과 Relaywake 전용 생성·재구성 자산이 함께 포함됩니다. 자세한 내용은 `THIRD_PARTY_NOTICES.md`와 `MIGRATION.md`를 참조하십시오.
+Run the complete local release gate with:
+
+```bash
+npm run check
+```
+
+## Cloudflare Pages
+
+The production site is hosted at [relaywake.pages.dev](https://relaywake.pages.dev/).
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | Vue |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Vite base | `/` |
+
+The E2E build is emitted separately to `dist-e2e` and must never be deployed as the production site.
+
+## Credits and licenses
+
+RELAYWAKE is a web reimplementation inspired by [matthiasbroske/VampireSurvivorsClone](https://github.com/matthiasbroske/VampireSurvivorsClone). The upstream MIT license is preserved in [`LICENSE`](LICENSE).
+
+Asset provenance, third-party credits, and license evidence are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the canonical manifest at [`src/game/assets.ts`](src/game/assets.ts). The Unity-to-web implementation mapping is recorded in [`MIGRATION.md`](MIGRATION.md).
