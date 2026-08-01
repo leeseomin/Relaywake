@@ -2,7 +2,7 @@
 
 **A 10-minute browser survival-action game built with Vue, Phaser, and TypeScript.**
 
-### [▶ Play RELAYWAKE](https://relaywake.pages.dev/)
+### [🎮 Play RELAYWAKE Online →](https://relaywake.pages.dev/)
 
 ### YouTube Demo — https://youtu.be/6N-1Kv-qeXk
 
