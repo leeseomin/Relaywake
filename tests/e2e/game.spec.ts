@@ -15,7 +15,13 @@ test('shows the RELAYWAKE brand in English without legacy project labels', async
   await expect(page).toHaveTitle('RELAYWAKE');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('RELAYWAKE');
   await expect(page.getByTestId('start-run')).toContainText('Start Operation');
-  await expect(page.getByRole('button', { name: 'Settings' })).toHaveCSS('font-size', '26px');
+  const settingsButton = page.getByRole('button', { name: 'Settings' });
+  await expect(settingsButton).toHaveText('SETTINGS');
+  await expect(settingsButton).toHaveCSS('border-radius', '2px');
+  await expect(page.getByRole('link', { name: 'Relaywake GitHub repository' })).toHaveAttribute(
+    'href',
+    'https://github.com/leeseomin/Relaywake',
+  );
   await expect(page.locator('.hero-orbit')).toHaveCount(0);
 
   for (const removedText of [
