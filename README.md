@@ -30,7 +30,7 @@
 
 ## Gameplay
 
-Choose an operative and field theme, survive escalating enemy waves, combine upgrades, defeat the final boss, and carry earned coins into later runs. The level preserves the original 600-second timeline, including the mini-boss at 300 seconds and progression-driven spawn rates, enemy probabilities, and health scaling.
+Choose an operative and field theme, survive escalating enemy waves, combine upgrades, defeat the final boss, and carry earned coins into later runs. The level preserves the original 600-second timeline with progression-driven spawn rates, enemy probabilities, and health scaling.
 
 ## Controls
 
@@ -38,7 +38,7 @@ Choose an operative and field theme, survive escalating enemy waves, combine upg
 | --- | --- | --- |
 | Move | `WASD` or arrow keys | Virtual joystick |
 | Pause / resume | `P`, `Esc`, or the HUD pause button | Pause button |
-| Choose an upgrade | `1`, `2`, `3`, or click a card | Tap a card |
+| Choose a level-up upgrade | `1`, `2`, `3`, or click a card | Tap a card |
 | Attack | Automatic | Automatic |
 
 ## Technology
@@ -82,19 +82,6 @@ Run the complete local release gate with:
 ```bash
 npm run check
 ```
-
-## Cloudflare Pages
-
-The production site is hosted at [relaywake.pages.dev](https://relaywake.pages.dev/).
-
-| Setting | Value |
-| --- | --- |
-| Framework preset | Vue |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Vite base | `/` |
-
-The E2E build is emitted separately to `dist-e2e` and must never be deployed as the production site.
 
 ## Credits and licenses
 
