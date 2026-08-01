@@ -12,7 +12,7 @@ Choose one of five operatives and a field theme for a 10-minute run. Combine 21 
 
 Weapons attack automatically and range from shuriken and bleeding daggers to melee arcs, orbiting axes, grenades, bazookas, and persistent fire zones.
 
-RELAYWAKE supports keyboard and mobile controls, English and Korean, and local profiles, settings, and run history.
+RELAYWAKE supports keyboard and mobile controls, six interface languages—Korean, English, Japanese, Simplified Chinese, Spanish, and French—and local profiles, settings, and run history.
 
 ## Controls
 
