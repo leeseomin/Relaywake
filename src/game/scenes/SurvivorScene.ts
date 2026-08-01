@@ -13,7 +13,6 @@ import { applyCharacterAbilityModifiers } from '../core/mastery';
 import { SeededRandom } from '../core/rng';
 import type {
   AbilityChoiceView,
-  GameTestSnapshot,
   HudSnapshot,
   RunSummary,
   StartRunOptions,
@@ -247,8 +246,8 @@ export class SurvivorScene extends Phaser.Scene {
 
   public init(options: StartRunOptions): void {
     this.options = options;
-    this.durationSeconds = options.e2e ? 24 : levelOne.durationSeconds;
-    this.miniBossSeconds = options.e2e ? 10 : levelOne.miniBossTimeSeconds;
+    this.durationSeconds = __E2E__ && options.e2e ? 24 : levelOne.durationSeconds;
+    this.miniBossSeconds = __E2E__ && options.e2e ? 10 : levelOne.miniBossTimeSeconds;
     this.finalBossEncounter.enemyId = null;
     this.finalBossEncounter.outOfRangeDuration = 0;
     this.finalBossEncounter.warningRemaining = 0;
@@ -266,7 +265,7 @@ export class SurvivorScene extends Phaser.Scene {
 
     this.cameras.main.roundPixels = true;
     this.cameras.main.startFollow(this.player.sprite, true, 0.085, 0.085);
-    this.cameras.main.setZoom(this.options.e2e ? 1.05 : 1);
+    this.cameras.main.setZoom(__E2E__ && this.options.e2e ? 1.05 : 1);
 
     attachActiveScene(this);
     this.events.once('shutdown', this.handleShutdown, this);
@@ -342,54 +341,6 @@ export class SurvivorScene extends Phaser.Scene {
     const magnitude = clamp(Math.hypot(x, y), 0, 1);
     this.touchX = direction.x * magnitude;
     this.touchY = direction.y * magnitude;
-  }
-
-  public testSnapshot(): GameTestSnapshot {
-    return {
-      ready: true,
-      paused: this.paused,
-      characterId: this.player.characterId,
-      fieldThemeId: this.options.fieldThemeId,
-      hp: this.player.hp,
-      maxHp: this.player.maxHp,
-      level: this.level,
-      enemies: this.enemies.filter((enemy) => enemy.active).length,
-      projectiles: this.projectiles.filter((projectile) => projectile.active).length,
-      orbiters: [...this.orbiters.values()].reduce((total, group) => total + group.length, 0),
-      elapsedSeconds: this.elapsedSeconds,
-      touchX: this.touchX,
-      touchY: this.touchY,
-      presentationPaused: this.anims.paused && this.tweens.paused,
-      audioPaused: this.audioPaused,
-      screen: this.ended ? 'gameOver' : this.levelUpOpen ? 'levelUp' : this.paused ? 'paused' : 'playing',
-    };
-  }
-
-  public testGrantXp(amount: number): void {
-    this.gainExperience(Math.max(0, amount));
-  }
-
-  public testDamagePlayer(amount: number): void {
-    this.player.invulnerability = 0;
-    this.damagePlayer(Math.max(0, amount));
-  }
-
-  public testSpawnEnemy(): void {
-    this.spawnEnemy('crawler', 145);
-  }
-
-  public testKillFinalBoss(): void {
-    if (this.ended) return;
-    let boss = this.enemies.find((enemy) => enemy.active && enemy.definition.id === 'finalBoss');
-    if (!boss) {
-      this.spawnEnemy('finalBoss', 180);
-      boss = this.enemies.find((enemy) => enemy.active && enemy.definition.id === 'finalBoss');
-    }
-    if (boss) this.damageEnemy(boss, boss.hp, 0, this.player.x, this.player.y, false);
-  }
-
-  public testFinish(victory: boolean): void {
-    this.finishRun(victory);
   }
 
   private createBackground(): void {
@@ -541,7 +492,7 @@ export class SurvivorScene extends Phaser.Scene {
 
   private updateSpawning(delta: number): void {
     const tick = this.spawns.update(delta, this.elapsedSeconds);
-    const cap = this.options.e2e ? E2E_ENEMY_CAP : ENEMY_CAP;
+    const cap = __E2E__ && this.options.e2e ? E2E_ENEMY_CAP : ENEMY_CAP;
     for (const id of tick.regularEnemies) {
       if (this.enemies.filter((enemy) => enemy.active).length >= cap) break;
       this.spawnEnemy(id);

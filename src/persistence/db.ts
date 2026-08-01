@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { AbilityIdSchema, CharacterIdSchema } from '../game/data/schemas';
 import {
   defaultProfile,
   defaultSettings,
@@ -10,17 +11,35 @@ import {
   type Settings,
 } from './schemas';
 
+export const DATABASE_NAME = 'c2-nightfall';
+export const DATABASE_VERSION = 2;
+
+export interface RecoveryRow {
+  id: string;
+  store: 'profiles' | 'settings';
+  quarantinedAt: string;
+  reason: string;
+  value: unknown;
+}
+
 export class C2Database extends Dexie {
   declare profiles: EntityTable<Profile, 'id'>;
   declare settings: EntityTable<Settings, 'id'>;
   declare runs: EntityTable<RunRow, 'id'>;
+  declare recovery: EntityTable<RecoveryRow, 'id'>;
 
   public constructor() {
-    super('c2-nightfall');
+    super(DATABASE_NAME);
     this.version(1).stores({
       profiles: 'id, updatedAt',
       settings: 'id, updatedAt',
       runs: 'id, endedAt, characterId, victory, kills',
+    });
+    this.version(DATABASE_VERSION).stores({
+      profiles: 'id, updatedAt',
+      settings: 'id, updatedAt',
+      runs: 'id, endedAt, characterId, victory, kills',
+      recovery: 'id, store, quarantinedAt',
     });
   }
 }
@@ -28,13 +47,33 @@ export class C2Database extends Dexie {
 export const db = new C2Database();
 
 export async function readProfile(): Promise<Profile | undefined> {
-  const row = await db.profiles.get('main');
-  return row ? ProfileSchema.parse(row) : undefined;
+  const row: unknown = await db.profiles.get('main');
+  if (row === undefined) return undefined;
+
+  const parsed = ProfileSchema.safeParse(row);
+  if (parsed.success) return parsed.data;
+
+  const recovered = migrateProfile(row) ?? defaultProfile();
+  await db.transaction('rw', db.profiles, db.recovery, async () => {
+    await db.recovery.put(createRecoveryRow('profiles', row, parsed.error.message));
+    await db.profiles.put(recovered);
+  });
+  return recovered;
 }
 
 export async function readSettings(): Promise<Settings | undefined> {
-  const row = await db.settings.get('main');
-  return row ? SettingsSchema.parse(row) : undefined;
+  const row: unknown = await db.settings.get('main');
+  if (row === undefined) return undefined;
+
+  const parsed = SettingsSchema.safeParse(row);
+  if (parsed.success) return parsed.data;
+
+  const recovered = migrateSettings(row) ?? defaultSettings();
+  await db.transaction('rw', db.settings, db.recovery, async () => {
+    await db.recovery.put(createRecoveryRow('settings', row, parsed.error.message));
+    await db.settings.put(recovered);
+  });
+  return recovered;
 }
 
 export async function writeSettings(settings: Settings): Promise<void> {
@@ -48,12 +87,20 @@ export async function writeRunAndProfile(
   const parsedRun = RunRowSchema.parse(run);
   const parsedFallback = ProfileSchema.parse(fallbackProfile);
 
-  return db.transaction('rw', db.runs, db.profiles, async () => {
+  return db.transaction('rw', db.runs, db.profiles, db.recovery, async () => {
     const [existingRun, storedProfile] = await Promise.all([
       db.runs.get(parsedRun.id),
       db.profiles.get('main'),
     ]);
-    const base = storedProfile ? ProfileSchema.parse(storedProfile) : parsedFallback;
+    const storedProfileResult = ProfileSchema.safeParse(storedProfile);
+    const base = storedProfileResult.success ? storedProfileResult.data : parsedFallback;
+    if (storedProfile !== undefined && !storedProfileResult.success) {
+      await db.recovery.put(createRecoveryRow(
+        'profiles',
+        storedProfile,
+        storedProfileResult.error.message,
+      ));
+    }
     if (existingRun) return { inserted: false, profile: base };
 
     const profile = ProfileSchema.parse({
@@ -74,10 +121,110 @@ export async function resetDatabase(): Promise<{ profile: Profile; settings: Set
   const profile = defaultProfile();
   const settings = defaultSettings();
 
-  await db.transaction('rw', db.profiles, db.settings, db.runs, async () => {
-    await Promise.all([db.profiles.clear(), db.settings.clear(), db.runs.clear()]);
+  await db.transaction('rw', db.profiles, db.settings, db.runs, db.recovery, async () => {
+    await Promise.all([
+      db.profiles.clear(),
+      db.settings.clear(),
+      db.runs.clear(),
+      db.recovery.clear(),
+    ]);
     await Promise.all([db.profiles.put(profile), db.settings.put(settings)]);
   });
 
   return { profile, settings };
+}
+
+function createRecoveryRow(
+  store: RecoveryRow['store'],
+  value: unknown,
+  reason: string,
+): RecoveryRow {
+  const suffix = globalThis.crypto?.randomUUID?.()
+    ?? `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+  return {
+    id: `${store}-${suffix}`,
+    store,
+    quarantinedAt: new Date().toISOString(),
+    reason,
+    value,
+  };
+}
+
+function migrateProfile(value: unknown): Profile | null {
+  if (!isRecord(value)) return null;
+  const fallback = defaultProfile();
+  const candidate = {
+    id: 'main',
+    coins: nonnegativeNumber(value.coins, fallback.coins, true),
+    unlockedCharacters: validUniqueValues(
+      value.unlockedCharacters,
+      CharacterIdSchema.safeParse.bind(CharacterIdSchema),
+      fallback.unlockedCharacters,
+    ),
+    bestTimeSeconds: nonnegativeNumber(
+      value.bestTimeSeconds,
+      fallback.bestTimeSeconds,
+      false,
+    ),
+    bestKills: nonnegativeNumber(value.bestKills, fallback.bestKills, true),
+    totalRuns: nonnegativeNumber(value.totalRuns, fallback.totalRuns, true),
+    discoveredAbilities: validUniqueValues(
+      value.discoveredAbilities,
+      AbilityIdSchema.safeParse.bind(AbilityIdSchema),
+      fallback.discoveredAbilities,
+    ),
+    updatedAt: typeof value.updatedAt === 'string' && value.updatedAt.length > 0
+      ? value.updatedAt
+      : fallback.updatedAt,
+  };
+  const parsed = ProfileSchema.safeParse(candidate);
+  return parsed.success ? parsed.data : null;
+}
+
+function migrateSettings(value: unknown): Settings | null {
+  if (!isRecord(value)) return null;
+  const fallback = defaultSettings();
+  const candidate = {
+    id: 'main',
+    locale: value.locale === 'ko' || value.locale === 'en' ? value.locale : fallback.locale,
+    soundEnabled: typeof value.soundEnabled === 'boolean'
+      ? value.soundEnabled
+      : fallback.soundEnabled,
+    screenShake: typeof value.screenShake === 'boolean'
+      ? value.screenShake
+      : fallback.screenShake,
+    damageNumbers: typeof value.damageNumbers === 'boolean'
+      ? value.damageNumbers
+      : fallback.damageNumbers,
+    updatedAt: typeof value.updatedAt === 'string' && value.updatedAt.length > 0
+      ? value.updatedAt
+      : fallback.updatedAt,
+  };
+  const parsed = SettingsSchema.safeParse(candidate);
+  return parsed.success ? parsed.data : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function nonnegativeNumber(value: unknown, fallback: number, integer: boolean): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return fallback;
+  return integer ? Math.floor(value) : value;
+}
+
+function validUniqueValues<T>(
+  value: unknown,
+  parse: (entry: unknown) => { success: boolean; data?: T },
+  fallback: T[],
+): T[] {
+  if (!Array.isArray(value)) return [...fallback];
+  const valid: T[] = [];
+  for (const entry of value) {
+    const parsed = parse(entry);
+    if (parsed.success && parsed.data !== undefined && !valid.includes(parsed.data)) {
+      valid.push(parsed.data);
+    }
+  }
+  return valid;
 }

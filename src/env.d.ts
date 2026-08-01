@@ -1,8 +1,10 @@
 /// <reference types="vite/client" />
 
-import type { C2TestBridge } from './game/core/types';
+import type { C2TestBridge } from './game/e2e/types';
 
 declare global {
+  const __E2E__: boolean;
+
   interface ImportMetaEnv {
     readonly DEV: boolean;
     readonly MODE: string;

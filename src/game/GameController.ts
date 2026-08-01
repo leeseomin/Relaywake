@@ -37,20 +37,6 @@ class GameController {
     });
   }
 
-  public exposeTestBridge(): void {
-    const scene = getActiveScene();
-    if (!scene) return;
-    window.__C2_GAME__ = {
-      ready: true,
-      snapshot: () => scene.testSnapshot(),
-      grantXp: (amount) => scene.testGrantXp(amount),
-      damagePlayer: (amount) => scene.testDamagePlayer(amount),
-      spawnEnemy: () => scene.testSpawnEnemy(),
-      testKillFinalBoss: () => scene.testKillFinalBoss(),
-      finishRun: (victory) => scene.testFinish(victory),
-    };
-  }
-
   public chooseAbility(id: AbilityId): void {
     getActiveScene()?.chooseAbility(id);
   }
@@ -84,7 +70,6 @@ class GameController {
   public destroy(): void {
     this.touchX = 0;
     this.touchY = 0;
-    if (window.__C2_GAME__) delete window.__C2_GAME__;
     this.game?.destroy(true);
     this.game = null;
     clearPendingRunOptions();

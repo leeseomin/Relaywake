@@ -30,10 +30,13 @@ const currentOptions = ref<StartRunOptions | null>(null);
 const runKey = ref(0);
 const booting = ref(true);
 const toastTimer = ref<number | null>(null);
-const e2e = new URLSearchParams(window.location.search).get('e2e') === '1';
+const e2e = __E2E__
+  && new URLSearchParams(window.location.search).get('e2e') === '1';
 const locale = computed(() => settingsStore.settings.locale);
 const isGameplayVisible = computed(() => ['playing', 'levelUp', 'paused', 'gameOver'].includes(session.screen));
 const cleanups: Array<() => void> = [];
+let removeTestBridge: (() => void) | null = null;
+let testBridgeGeneration = 0;
 
 onMounted(async () => {
   window.addEventListener('keydown', handleGlobalKeydown);
@@ -50,7 +53,7 @@ onMounted(async () => {
     gameEvents.on('ready', () => {
       session.gameReady = true;
       gameController.syncTouchVector();
-      if (e2e) gameController.exposeTestBridge();
+      if (e2e) void exposeTestBridge();
       else showToast(t(locale.value, 'runHint'));
     }),
     gameEvents.on('hud', (snapshot) => session.setHud(snapshot)),
@@ -66,6 +69,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleGlobalKeydown);
   for (const cleanup of cleanups) cleanup();
+  clearTestBridge();
   gameController.destroy();
   if (toastTimer.value !== null) window.clearTimeout(toastTimer.value);
 });
@@ -74,11 +78,10 @@ function buildRunOptions(
   characterId: CharacterId,
   fieldThemeId: FieldThemeId,
 ): StartRunOptions {
-  return {
+  const options: StartRunOptions = {
     characterId,
     fieldThemeId,
     seed: e2e ? 20260729 : Date.now(),
-    e2e,
     preferences: {
       locale: settingsStore.settings.locale,
       soundEnabled: settingsStore.settings.soundEnabled,
@@ -86,12 +89,15 @@ function buildRunOptions(
       damageNumbers: settingsStore.settings.damageNumbers,
     },
   };
+  if (__E2E__ && e2e) options.e2e = true;
+  return options;
 }
 
 async function startRun(
   characterId: CharacterId,
   fieldThemeId: FieldThemeId,
 ): Promise<void> {
+  clearTestBridge();
   gameController.destroy();
   session.start(characterId);
   currentOptions.value = buildRunOptions(characterId, fieldThemeId);
@@ -137,9 +143,25 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
 }
 
 function quitRun(): void {
+  clearTestBridge();
   gameController.destroy();
   currentOptions.value = null;
   session.toMenu();
+}
+
+async function exposeTestBridge(): Promise<void> {
+  if (!__E2E__ || !e2e) return;
+  const generation = ++testBridgeGeneration;
+  const { installTestBridge } = await import('./game/e2e/testBridge');
+  if (generation !== testBridgeGeneration || !session.gameReady) return;
+  removeTestBridge?.();
+  removeTestBridge = installTestBridge();
+}
+
+function clearTestBridge(): void {
+  testBridgeGeneration += 1;
+  removeTestBridge?.();
+  removeTestBridge = null;
 }
 
 async function handleRunEnded(summary: RunSummary): Promise<void> {

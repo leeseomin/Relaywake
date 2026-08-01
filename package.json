@@ -12,16 +12,20 @@
     "dev": "vite",
     "generate:enemies": "node scripts/generate-enemy-sprites.mjs",
     "build": "vue-tsc -b && vite build",
+    "build:e2e": "vite build --mode e2e",
     "build:bundle": "vite build",
     "preview": "vite preview",
+    "preview:e2e": "vite preview --mode e2e",
     "typecheck": "vue-tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "npm run build:bundle && npm run test:e2e:run",
+    "test:e2e": "npm run build:e2e && npm run test:e2e:run",
     "test:e2e:run": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "check": "npm run typecheck && npm run test && npm run build:bundle && npm run test:e2e:run"
+    "test:production": "playwright test --config playwright.production.config.ts",
+    "verify:production": "node scripts/verify-production-build.mjs",
+    "check": "npm run typecheck && npm run test && npm run build:e2e && npm run test:e2e:run && npm run build && npm run verify:production && npm run test:production"
   },
   "dependencies": {
     "dexie": "^4.0.11",
