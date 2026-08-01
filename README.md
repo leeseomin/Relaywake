@@ -4,6 +4,8 @@
 
 ### [▶ Play RELAYWAKE](https://relaywake.pages.dev/)
 
+### [▶ Watch the demo](https://youtu.be/6N-1Kv-qeXk)
+
 ---
 
 ## Gameplay
