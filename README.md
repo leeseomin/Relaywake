@@ -16,7 +16,7 @@
 
 ## Gameplay
 
-Choose one of five operatives and a field theme for a 10-minute run. Combine 22 active and passive upgrades while facing six enemy families, a mid-run mini-boss, and a final boss. Earned coins carry into later runs.
+Choose one of five operatives and a field theme for a 10-minute run. Combine 23 active and passive upgrades while facing six enemy families, a mid-run mini-boss, and a final boss. Earned coins carry into later runs.
 
 Weapons attack automatically and range from shuriken and bleeding daggers to melee arcs, orbiting axes, grenades, bazookas, and persistent fire zones.
 
@@ -76,3 +76,10 @@ Except for third-party materials identified in [`THIRD_PARTY_NOTICES.md`](THIRD_
 | RELAYWAKE modifications and original content | © 2026 leeseomin |
 
 See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for detailed asset provenance, credits, and license terms.
+
+## Original weapons added for RELAYWAKE
+
+The following active weapons were newly added to RELAYWAKE beyond the upstream clone:
+
+- **Gravity Pulse** — alternates between radial push and pull waves, creating space for survival and gathering enemies for follow-up attacks.
+- **Orbiting Fire Core** — circles the operative, scorching enemies on contact and leaving them with persistent burn damage.
