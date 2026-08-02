@@ -83,3 +83,7 @@ The following active weapons were newly added to RELAYWAKE beyond the upstream c
 
 - **Gravity Pulse** — alternates between radial push and pull waves, creating space for survival and gathering enemies for follow-up attacks.
 - **Orbiting Fire Core** — circles the operative, scorching enemies on contact and leaving them with persistent burn damage.
+
+## Original unit designs for RELAYWAKE
+
+All unit designs and pixel artwork were newly replaced for RELAYWAKE. This includes all five playable operatives and all eight enemy, mini-boss, and final-boss units, giving the browser adaptation its own visual identity beyond the upstream clone.
