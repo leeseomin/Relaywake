@@ -33,7 +33,18 @@ const emit = defineEmits<{ select: [id: AbilityId] }>();
           @click="emit('select', choice.id)"
         >
           <span class="upgrade-index">0{{ index + 1 }}</span>
-          <span class="upgrade-icon"><img :src="choice.iconUrl" alt="" /></span>
+          <span
+            class="upgrade-icon"
+            :class="{ 'gravity-pulse-upgrade-icon': choice.id === 'gravityPulse' }"
+          >
+            <span v-if="choice.id === 'gravityPulse'" class="gravity-pulse-glyph" aria-hidden="true">
+              <span class="gravity-pulse-ring gravity-pulse-ring-outer"></span>
+              <span class="gravity-pulse-ring gravity-pulse-ring-middle"></span>
+              <span class="gravity-pulse-ring gravity-pulse-ring-inner"></span>
+              <span class="gravity-pulse-core"></span>
+            </span>
+            <img v-else :src="choice.iconUrl" alt="" />
+          </span>
           <span class="upgrade-type">{{ t(props.locale, choice.category === 'active' ? 'activeAbility' : 'passiveAbility') }}</span>
           <strong>{{ choice.name }}</strong>
           <span class="upgrade-level">LV {{ choice.level }} → {{ choice.nextLevel }}</span>
