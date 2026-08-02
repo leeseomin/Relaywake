@@ -149,7 +149,14 @@ function statWidth(value: number, min: number, max: number): string {
               <p class="detail-code">OPERATIVE / {{ characterCodes[selectedCharacter.id] }}</p>
               <h3>{{ selectedCharacter.name[props.locale] }}</h3>
             </div>
-            <span class="ready-chip">READY</span>
+            <button
+              class="primary-action start-operation-action"
+              type="button"
+              data-testid="start-run"
+              @click="emit('start', selected, selectedFieldTheme)"
+            >
+              <span>{{ t(props.locale, 'start') }}</span><span aria-hidden="true">→</span>
+            </button>
           </div>
           <p>{{ selectedCharacter.description[props.locale] }}</p>
           <dl class="stats-grid">
@@ -171,14 +178,6 @@ function statWidth(value: number, min: number, max: number): string {
             </div>
           </dl>
 
-          <button
-            class="primary-action start-operation-action"
-            type="button"
-            data-testid="start-run"
-            @click="emit('start', selected, selectedFieldTheme)"
-          >
-            <span>{{ t(props.locale, 'start') }}</span><span aria-hidden="true">→</span>
-          </button>
           <p class="control-note">{{ t(props.locale, 'controls') }}</p>
         </article>
       </div>

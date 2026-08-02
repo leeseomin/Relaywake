@@ -54,14 +54,15 @@ button:disabled{cursor:not-allowed;opacity:.45;transform:none!important;box-shad
 .loadout-sidebar .field-theme-card{grid-template-columns:86px minmax(0,1fr) auto;min-height:76px;padding:9px}
 .loadout-sidebar .field-theme-preview{width:86px;height:58px}
 .loadout-sidebar .field-theme-copy strong{overflow:visible;text-overflow:clip;white-space:normal}
-.start-operation-action{position:relative;isolation:isolate;overflow:hidden;margin-top:auto;color:#171006;background:linear-gradient(90deg,#ffd66f,#ffb84d);border-color:rgba(255,235,164,.7);box-shadow:0 12px 34px rgba(255,184,77,.25)}
+.detail-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,260px);align-items:start}
+.start-operation-action{position:relative;isolation:isolate;overflow:hidden;width:100%;margin-top:0;color:#171006;background:linear-gradient(90deg,#ffd66f,#ffb84d);border-color:rgba(255,235,164,.7);box-shadow:0 12px 34px rgba(255,184,77,.25)}
 .start-operation-action:before{content:"";position:absolute;z-index:-1;top:-80%;bottom:-80%;left:-30%;width:22%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,255,255,.42),transparent);transform:skewX(-18deg) translateX(-240%);animation:start-light-sweep 3.6s ease-in-out infinite}
 .start-operation-action span:last-child{display:inline-block;animation:start-arrow-nudge 1.8s ease-in-out infinite}
 .start-operation-action:hover{background:linear-gradient(90deg,#ffe69c,#ffc766);box-shadow:0 16px 44px rgba(255,184,77,.42),0 0 26px rgba(255,204,101,.16)}
 .start-operation-action:hover span:last-child{animation-duration:.8s}
 @keyframes start-light-sweep{0%,58%{transform:skewX(-18deg) translateX(-240%)}82%,100%{transform:skewX(-18deg) translateX(760%)}}
 @keyframes start-arrow-nudge{0%,55%,100%{transform:translateX(0)}72%{transform:translateX(7px)}84%{transform:translateX(2px)}}
-@media(max-width:700px){.field-theme-options{grid-template-columns:1fr}.field-theme-card{grid-template-columns:62px minmax(0,1fr) auto}.field-theme-preview{width:62px;height:42px}}
+@media(max-width:700px){.field-theme-options{grid-template-columns:1fr}.field-theme-card{grid-template-columns:62px minmax(0,1fr) auto}.field-theme-preview{width:62px;height:42px}.detail-header{grid-template-columns:1fr}.detail-header .start-operation-action{margin-top:16px}}
 @media(max-height:1000px) and (min-width:981px){
   .menu-screen{padding-top:24px}
   .menu-settings-button{width:auto;min-width:120px;height:42px;padding-inline:16px;font-size:11px}
