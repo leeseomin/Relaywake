@@ -2,6 +2,7 @@ import type { AbilityId } from '../data/schemas';
 import type { CharacterId } from '../data/characters';
 import type { FieldThemeId } from '../data/fieldThemes';
 import type { Locale } from '../data/localization';
+import type { GravityPulseMode } from './combat';
 
 export interface AbilityChoiceView {
   id: AbilityId;
@@ -30,7 +31,12 @@ export interface HudSnapshot {
   bossMaxHp: number | null;
   bossOffscreen: boolean;
   bossDirectionRadians: number | null;
-  abilities: ReadonlyArray<{ id: AbilityId; level: number; iconUrl: string }>;
+  abilities: ReadonlyArray<{
+    id: AbilityId;
+    level: number;
+    iconUrl: string;
+    nextGravityPulseMode?: GravityPulseMode;
+  }>;
 }
 
 export interface RunSummary {

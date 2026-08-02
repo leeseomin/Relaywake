@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { GravityPulseMode } from '../game/core/combat';
 import type { HudSnapshot } from '../game/core/types';
 import { formatClock } from '../game/core/math';
 import { t, type Locale } from '../game/data/localization';
@@ -19,6 +20,11 @@ const bossLabel = computed(() => (
 ));
 const bossHealthLabel = computed(() => `${bossLabel.value} ${t(props.locale, 'health')}`);
 const bossDirectionLabel = computed(() => `${bossLabel.value} ${t(props.locale, 'bossDirection')}`);
+
+function gravityPulseModeLabel(mode: GravityPulseMode | undefined): string | undefined {
+  if (!mode) return undefined;
+  return t(props.locale, mode === 'push' ? 'gravityPulsePushNext' : 'gravityPulsePullNext');
+}
 </script>
 
 <template>
@@ -48,8 +54,24 @@ const bossDirectionLabel = computed(() => `${bossLabel.value} ${t(props.locale, 
         <span v-if="lowHealth" class="danger-chip" aria-live="polite">{{ t(props.locale, 'danger') }}</span>
       </div>
       <div class="ability-rack" :aria-label="t(props.locale, 'abilities')">
-        <div v-for="ability in props.hud.abilities" :key="ability.id" class="ability-chip">
+        <div
+          v-for="ability in props.hud.abilities"
+          :key="ability.id"
+          class="ability-chip"
+          :class="{
+            'gravity-pulse-chip': ability.nextGravityPulseMode,
+            'gravity-pulse-push-next': ability.nextGravityPulseMode === 'push',
+            'gravity-pulse-pull-next': ability.nextGravityPulseMode === 'pull',
+          }"
+          :aria-label="gravityPulseModeLabel(ability.nextGravityPulseMode)"
+          :title="gravityPulseModeLabel(ability.nextGravityPulseMode)"
+        >
           <img :src="ability.iconUrl" alt="" />
+          <span
+            v-if="ability.nextGravityPulseMode"
+            class="gravity-pulse-mode-indicator"
+            aria-hidden="true"
+          >{{ ability.nextGravityPulseMode === 'push' ? '↖' : '↘' }}</span>
           <b>{{ ability.level }}</b>
         </div>
       </div>

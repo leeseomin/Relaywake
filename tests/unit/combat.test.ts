@@ -3,6 +3,7 @@ import {
   resolveDamage,
   resolveGravityPulseImpulse,
   resolveSideSlashPattern,
+  selectGravityPulseDamageNumberTargets,
 } from '../../src/game/core/combat';
 
 describe('combat rules', () => {
@@ -45,5 +46,21 @@ describe('combat rules', () => {
 
   it('does not apply a gravity impulse outside the pulse radius', () => {
     expect(resolveGravityPulseImpulse(0, 0, 101, 0, 100, 3, 'push', false)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('limits Gravity Pulse damage numbers to the 24 closest targets', () => {
+    const targets = Array.from({ length: 30 }, (_, index) => ({
+      id: 30 - index,
+      x: 30 - index,
+      y: 0,
+    }));
+    const originalOrder = targets.map((target) => target.id);
+    const selected = selectGravityPulseDamageNumberTargets(targets, 0, 0);
+
+    expect(selected.size).toBe(24);
+    expect([...selected].sort((left, right) => left - right)).toEqual(
+      Array.from({ length: 24 }, (_, index) => index + 1),
+    );
+    expect(targets.map((target) => target.id)).toEqual(originalOrder);
   });
 });

@@ -19,6 +19,7 @@ export interface GravityPulseImpulse {
 }
 
 export const FINAL_BOSS_COIN_REWARD = 10;
+export const GRAVITY_PULSE_DAMAGE_NUMBER_LIMIT = 24;
 
 export function resolveDamage(currentHp: number, requestedDamage: number): DamageResolution {
   const safeHp = Math.max(0, currentHp);
@@ -75,4 +76,25 @@ export function resolveGravityPulseImpulse(
     x: (dx / distance) * magnitude,
     y: (dy / distance) * magnitude,
   };
+}
+
+export function selectGravityPulseDamageNumberTargets(
+  targets: ReadonlyArray<{ id: number; x: number; y: number }>,
+  sourceX: number,
+  sourceY: number,
+  limit = GRAVITY_PULSE_DAMAGE_NUMBER_LIMIT,
+): Set<number> {
+  const safeLimit = Math.max(0, Math.floor(limit));
+  return new Set(
+    [...targets]
+      .sort((left, right) => {
+        const leftDx = left.x - sourceX;
+        const leftDy = left.y - sourceY;
+        const rightDx = right.x - sourceX;
+        const rightDy = right.y - sourceY;
+        return leftDx * leftDx + leftDy * leftDy - (rightDx * rightDx + rightDy * rightDy);
+      })
+      .slice(0, safeLimit)
+      .map((target) => target.id),
+  );
 }

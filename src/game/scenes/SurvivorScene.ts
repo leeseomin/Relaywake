@@ -6,6 +6,7 @@ import {
   resolveDamage,
   resolveGravityPulseImpulse,
   resolveSideSlashPattern,
+  selectGravityPulseDamageNumberTargets,
   type GravityPulseMode,
   type SlashSide,
 } from '../core/combat';
@@ -1072,9 +1073,24 @@ export class SurvivorScene extends Phaser.Scene {
     });
 
     const candidates = this.enemyGrid.queryCircle(this.player.x, this.player.y, stats.radius + 50);
-    for (const enemy of candidates) {
-      if (!enemy.active || !circleOverlap(this.player, stats.radius, enemy, enemy.radius)) continue;
-      this.damageEnemy(enemy, stats.damage, 0, this.player.x, this.player.y, true);
+    const hits = candidates.filter((enemy) => (
+      enemy.active && circleOverlap(this.player, stats.radius, enemy, enemy.radius)
+    ));
+    const numberedEnemyIds = selectGravityPulseDamageNumberTargets(
+      hits,
+      this.player.x,
+      this.player.y,
+    );
+    for (const enemy of hits) {
+      this.damageEnemy(
+        enemy,
+        stats.damage,
+        0,
+        this.player.x,
+        this.player.y,
+        true,
+        numberedEnemyIds.has(enemy.id),
+      );
       if (!enemy.active) continue;
       const impulse = resolveGravityPulseImpulse(
         this.player.x,
@@ -1572,6 +1588,7 @@ export class SurvivorScene extends Phaser.Scene {
     sourceX: number,
     sourceY: number,
     allowLifesteal: boolean,
+    displayDamageNumber = true,
   ): void {
     if (!enemy.active || amount <= 0) return;
     const resolution = resolveDamage(enemy.hp, amount);
@@ -1584,7 +1601,7 @@ export class SurvivorScene extends Phaser.Scene {
       enemy.knockbackX += direction.x * knockback * 58;
       enemy.knockbackY += direction.y * knockback * 58;
     }
-    if (this.options.preferences.damageNumbers) {
+    if (displayDamageNumber && this.options.preferences.damageNumbers) {
       this.showDamageNumber(enemy.x, enemy.y - enemy.radius, resolution.appliedDamage, 0xffe0b0);
     }
     if (allowLifesteal) this.tryLifesteal();
@@ -1732,6 +1749,9 @@ export class SurvivorScene extends Phaser.Scene {
         id: state.id,
         level: state.level,
         iconUrl: iconUrl(getAbility(state.id).iconKey),
+        ...(state.id === 'gravityPulse'
+          ? { nextGravityPulseMode: this.gravityPulseMode }
+          : {}),
       })),
     };
     gameEvents.emit('hud', snapshot);

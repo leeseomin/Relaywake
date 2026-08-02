@@ -145,3 +145,32 @@ button:disabled{cursor:not-allowed;opacity:.45;transform:none!important;box-shad
   45%,72%{opacity:1}
   100%{transform:scale(.68);opacity:.5}
 }
+
+.ability-chip.gravity-pulse-chip:before{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border:1px solid currentColor;
+  border-radius:50%;
+  opacity:.55;
+  pointer-events:none;
+}
+.ability-chip.gravity-pulse-push-next{
+  color:#62e9ff;
+  border-color:rgba(98,233,255,.9);
+  box-shadow:0 0 10px rgba(98,233,255,.28),inset 0 0 10px rgba(98,233,255,.12);
+}
+.ability-chip.gravity-pulse-pull-next{
+  color:#b67cff;
+  border-color:rgba(182,124,255,.9);
+  box-shadow:0 0 10px rgba(182,124,255,.3),inset 0 0 10px rgba(182,124,255,.14);
+}
+.gravity-pulse-mode-indicator{
+  position:absolute;
+  top:0;
+  left:2px;
+  z-index:1;
+  font:800 10px/1 "Space Mono",monospace;
+  color:currentColor;
+  text-shadow:0 1px 3px #000;
+}
