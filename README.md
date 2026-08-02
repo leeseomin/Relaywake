@@ -4,6 +4,8 @@
 
 ### [🎮 Play RELAYWAKE Online →](https://relaywake.pages.dev/)
 
+![RELAYWAKE gameplay](webp/5s.webp)
+
 <br>
 
 ### ▶️ Gameplay Demo — https://youtu.be/6N-1Kv-qeXk
