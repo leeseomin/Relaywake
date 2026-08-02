@@ -248,6 +248,33 @@ export const abilities = z.array(AbilityDefinitionSchema).parse([
     ],
   }),
   make({
+    id: 'gravityPulse',
+    name: {
+      ko: '중력 펄스',
+      en: 'Gravity Pulse',
+      ja: 'グラビティパルス',
+      'zh-Hans': '重力脉冲',
+      es: 'Pulso gravitatorio',
+      fr: 'Impulsion gravitationnelle',
+    },
+    description: {
+      ko: '밀어내기와 끌어당기기를 번갈아 방출해 적의 진형을 제어합니다.',
+      en: 'Alternates between pushing enemies away and pulling them in to control the battlefield.',
+      ja: '敵を押し出す波と引き寄せる波を交互に放ち、戦場を制御します。',
+      'zh-Hans': '交替释放推开与拉近敌人的脉冲，控制战场空间。',
+      es: 'Alterna pulsos que alejan y atraen enemigos para controlar el campo de batalla.',
+      fr: 'Alterne des impulsions qui repoussent et attirent les ennemis pour contrôler le terrain.',
+    },
+    iconKey: 'weapon-gravity-pulse', category: 'active', behavior: 'gravityPulse', maxLevel: 5,
+    stats: { damage: 3, cooldown: 3.4, count: 1, radius: 168, duration: 0.38, knockback: 3.2, pierce: 99 },
+    bonuses: [
+      { stat: 'damage', values: [1, 1, 2, 2] },
+      { stat: 'radius', values: [12, 12, 16, 20] },
+      { stat: 'knockback', values: [0.5, 0.5, 0.7, 0.9] },
+      { stat: 'cooldown', values: [-0.15, -0.15, -0.2, -0.25] },
+    ],
+  }),
+  make({
     id: 'sword',
     name: { ko: '쌍방향 검격', en: 'Twin Sword', ja: '双方向剣撃', 'zh-Hans': '双向剑击', es: 'Espada gemela', fr: 'Lames jumelles' },
     description: {

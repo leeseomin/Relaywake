@@ -92,4 +92,17 @@ describe('Zod-validated game data', () => {
       category: 'active',
     });
   });
+
+  it('registers Gravity Pulse as an alternating battlefield-control weapon', () => {
+    expect(abilities.find((ability) => ability.id === 'gravityPulse')).toMatchObject({
+      behavior: 'gravityPulse',
+      iconKey: 'weapon-gravity-pulse',
+      category: 'active',
+      maxLevel: 5,
+      stats: {
+        radius: 168,
+        knockback: 3.2,
+      },
+    });
+  });
 });

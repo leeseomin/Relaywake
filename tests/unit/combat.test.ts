@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   resolveDamage,
+  resolveGravityPulseImpulse,
   resolveSideSlashPattern,
 } from '../../src/game/core/combat';
 
@@ -29,5 +30,20 @@ describe('combat rules', () => {
     expect(first.angles[0]).toBeCloseTo(Math.PI / 2);
     expect(second.angles[0]).toBeCloseTo(Math.PI * 1.5);
     expect(second.nextSide).toBe(1);
+  });
+
+  it('resolves gravity pulses in opposite directions with boss resistance', () => {
+    const pushed = resolveGravityPulseImpulse(0, 0, 50, 0, 100, 3, 'push', false);
+    const pulled = resolveGravityPulseImpulse(0, 0, 50, 0, 100, 3, 'pull', false);
+    const bossPush = resolveGravityPulseImpulse(0, 0, 50, 0, 100, 3, 'push', true);
+
+    expect(pushed.x).toBeGreaterThan(0);
+    expect(pulled.x).toBeCloseTo(-pushed.x);
+    expect(pushed.y).toBe(0);
+    expect(bossPush.x).toBeCloseTo(pushed.x * 0.28);
+  });
+
+  it('does not apply a gravity impulse outside the pulse radius', () => {
+    expect(resolveGravityPulseImpulse(0, 0, 101, 0, 100, 3, 'push', false)).toEqual({ x: 0, y: 0 });
   });
 });

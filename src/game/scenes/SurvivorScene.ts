@@ -4,7 +4,9 @@ import { assetDisplayScale, iconUrl } from '../assets';
 import {
   FINAL_BOSS_COIN_REWARD,
   resolveDamage,
+  resolveGravityPulseImpulse,
   resolveSideSlashPattern,
+  type GravityPulseMode,
   type SlashSide,
 } from '../core/combat';
 import { applyExperience, xpRequiredForLevel } from '../core/xp';
@@ -236,6 +238,7 @@ export class SurvivorScene extends Phaser.Scene {
   private touchX = 0;
   private touchY = 0;
   private macheteSide: SlashSide = 1;
+  private gravityPulseMode: GravityPulseMode = 'push';
   private audioContext: AudioContext | null = null;
   private audioPaused = false;
   private readonly activeTones = new Map<OscillatorNode, GainNode>();
@@ -252,6 +255,7 @@ export class SurvivorScene extends Phaser.Scene {
     this.finalBossEncounter.outOfRangeDuration = 0;
     this.finalBossEncounter.warningRemaining = 0;
     this.finalBossEncounter.repositionCooldown = 0;
+    this.gravityPulseMode = 'push';
     this.rng = new SeededRandom(options.seed ?? Date.now());
     this.abilities = new AbilityDirector(this.rng);
     this.spawns = new SpawnDirector(this.rng, this.durationSeconds, this.miniBossSeconds);
@@ -916,7 +920,7 @@ export class SurvivorScene extends Phaser.Scene {
       return;
     }
     this.spawnProjectile({
-      owner: 'enemy', textureKey: 'enemy-gravity-grenade', sourceAbility: null,
+      owner: 'enemy', textureKey: 'weapon-gravity-pulse', sourceAbility: null,
       x: enemy.x, y: enemy.y, vx: directionX * enemy.definition.projectileSpeed, vy: directionY * enemy.definition.projectileSpeed,
       damage: enemy.definition.damage, radius: 10, ttl: 1.25, pierce: 1, knockback: 0,
       rotationSpeed: 5, expiry: 'gravity', explosionRadius: 92, zoneDuration: 2.6, fragments: 0,
@@ -940,6 +944,10 @@ export class SurvivorScene extends Phaser.Scene {
       const stats = this.effectiveAbilityStats(state.id);
       const target = this.nearestEnemy(850);
       if (!target && !['meleeFan', 'beam', 'sideSlash'].includes(definition.behavior)) continue;
+      if (
+        definition.behavior === 'gravityPulse'
+        && (!target || distanceSquared(target, this.player) > (stats.radius + target.radius) ** 2)
+      ) continue;
 
       switch (definition.behavior) {
         case 'projectile':
@@ -960,6 +968,9 @@ export class SurvivorScene extends Phaser.Scene {
           break;
         case 'sideSlash':
           this.fireSideSlash(state.id, stats);
+          break;
+        case 'gravityPulse':
+          this.fireGravityPulse(stats);
           break;
         default:
           break;
@@ -1024,6 +1035,65 @@ export class SurvivorScene extends Phaser.Scene {
     for (const angle of pattern.angles) {
       this.createMelee(id, stats, angle, arcHalfAngle, pattern.angularVelocity);
     }
+  }
+
+  private fireGravityPulse(stats: WeaponStats): void {
+    const mode = this.gravityPulseMode;
+    this.gravityPulseMode = mode === 'push' ? 'pull' : 'push';
+    const color = mode === 'push' ? 0x62e9ff : 0xb67cff;
+    const startScale = mode === 'push' ? 0.12 : 1;
+    const endScale = mode === 'push' ? 1 : 0.12;
+    const durationMs = Math.max(180, stats.duration * 1000);
+
+    const wave = this.add.circle(this.player.x, this.player.y, stats.radius, color, 0.08)
+      .setStrokeStyle(4, color, 0.9)
+      .setScale(startScale)
+      .setDepth(96);
+    const core = this.add.sprite(this.player.x, this.player.y, 'weapon-gravity-pulse')
+      .setScale(2.2)
+      .setDepth(97)
+      .setTint(color)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    this.tweens.add({
+      targets: wave,
+      scale: endScale,
+      alpha: 0,
+      duration: durationMs,
+      ease: mode === 'push' ? 'Quad.Out' : 'Quad.In',
+      onComplete: () => wave.destroy(),
+    });
+    this.tweens.add({
+      targets: core,
+      scale: mode === 'push' ? 3.8 : 1.1,
+      rotation: mode === 'push' ? Math.PI : -Math.PI,
+      alpha: 0,
+      duration: durationMs,
+      onComplete: () => core.destroy(),
+    });
+
+    const candidates = this.enemyGrid.queryCircle(this.player.x, this.player.y, stats.radius + 50);
+    for (const enemy of candidates) {
+      if (!enemy.active || !circleOverlap(this.player, stats.radius, enemy, enemy.radius)) continue;
+      this.damageEnemy(enemy, stats.damage, 0, this.player.x, this.player.y, true);
+      if (!enemy.active) continue;
+      const impulse = resolveGravityPulseImpulse(
+        this.player.x,
+        this.player.y,
+        enemy.x,
+        enemy.y,
+        stats.radius + enemy.radius,
+        stats.knockback,
+        mode,
+        enemy.definition.boss,
+      );
+      enemy.knockbackX += impulse.x;
+      enemy.knockbackY += impulse.y;
+    }
+
+    if (this.options.preferences.screenShake && mode === 'push') {
+      this.cameras.main.shake(70, 0.0015);
+    }
+    this.tone(mode === 'push' ? 115 : 185, 0.07);
   }
 
   private createMelee(id: AbilityId, stats: WeaponStats, angle: number, arcHalfAngle: number, angularVelocity: number): void {

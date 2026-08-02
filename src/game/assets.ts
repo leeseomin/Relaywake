@@ -461,11 +461,11 @@ export const assetManifest = [
     ...upstream('Assets/Sprites/Weapons/EnemyBoomerang.png'),
   },
   {
-    key: 'enemy-gravity-grenade',
+    key: 'weapon-gravity-pulse',
     path: '/assets/weapons/gravity-grenade.png',
     format: 'png',
     dimensions: { width: 10, height: 13 },
-    consumers: ['phaser'],
+    consumers: ['phaser', 'ability-icon'],
     ...upstream('Assets/Sprites/Weapons/GravityGrenade.png'),
   },
 

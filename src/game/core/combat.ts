@@ -1,5 +1,6 @@
 export type SideSlashWeapon = 'machete' | 'sword';
 export type SlashSide = -1 | 1;
+export type GravityPulseMode = 'push' | 'pull';
 
 export interface DamageResolution {
   appliedDamage: number;
@@ -10,6 +11,11 @@ export interface SideSlashPattern {
   angles: readonly number[];
   angularVelocity: number;
   nextSide: SlashSide;
+}
+
+export interface GravityPulseImpulse {
+  x: number;
+  y: number;
 }
 
 export const FINAL_BOSS_COIN_REWARD = 10;
@@ -41,5 +47,32 @@ export function resolveSideSlashPattern(
     angles: [facingAngle + sideOffset],
     angularVelocity: currentSide * -1.8,
     nextSide: currentSide > 0 ? -1 : 1,
+  };
+}
+
+export function resolveGravityPulseImpulse(
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  radius: number,
+  strength: number,
+  mode: GravityPulseMode,
+  isBoss: boolean,
+): GravityPulseImpulse {
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const distance = Math.hypot(dx, dy);
+  if (distance <= 0 || distance > radius || radius <= 0 || strength <= 0) {
+    return { x: 0, y: 0 };
+  }
+
+  const falloff = 0.35 + (1 - distance / radius) * 0.65;
+  const bossResistance = isBoss ? 0.28 : 1;
+  const polarity = mode === 'push' ? 1 : -1;
+  const magnitude = strength * 58 * falloff * bossResistance * polarity;
+  return {
+    x: (dx / distance) * magnitude,
+    y: (dy / distance) * magnitude,
   };
 }
