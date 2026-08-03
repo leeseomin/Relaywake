@@ -75,6 +75,19 @@ describe('Zod-validated game data', () => {
     ]);
   });
 
+  it('uses the intended regular-enemy and mini-boss health balance', () => {
+    expect(Object.fromEntries(enemies.map(({ id, hp }) => [id, hp]))).toEqual({
+      crawler: 11,
+      crab: 33,
+      brute: 55,
+      wizard: 27.5,
+      nailhead: 49.5,
+      gravity: 41.8,
+      miniBoss: 500,
+      finalBoss: 1000,
+    });
+  });
+
   it('registers Fire Master with its dedicated fire-orbit loadout', () => {
     const fireMaster = characters.find((character) => character.id === 'fire');
     const fireOrb = abilities.find((ability) => ability.id === 'fireOrb');
