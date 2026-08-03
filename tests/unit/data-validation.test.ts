@@ -84,8 +84,12 @@ describe('Zod-validated game data', () => {
       nailhead: 49.5,
       gravity: 41.8,
       miniBoss: 400,
-      finalBoss: 1000,
+      finalBoss: 2500,
     });
+  });
+
+  it('uses the intended final-boss attack cadence', () => {
+    expect(enemies.find(({ id }) => id === 'finalBoss')?.attackCooldown).toBe(1.8);
   });
 
   it('registers Fire Master with its dedicated fire-orbit loadout', () => {

@@ -39,7 +39,7 @@ export const enemies = z.array(EnemyDefinitionSchema).parse([
   },
   {
     id: 'finalBoss', name: 'Night Sovereign', spriteKey: 'enemy-boss', animationKey: 'enemy-boss-walk', behavior: 'gravity',
-    hp: 1000, damage: 20, speed: 70, xp: 250, radius: 44, attackRange: 330, attackCooldown: 2.2,
+    hp: 2500, damage: 20, speed: 70, xp: 250, radius: 44, attackRange: 330, attackCooldown: 1.8,
     projectileSpeed: 180, coinChance: 1, boss: true, displayScale: 1,
   },
 ]);
