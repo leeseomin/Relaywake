@@ -77,13 +77,13 @@ describe('Zod-validated game data', () => {
 
   it('uses the intended regular-enemy and mini-boss health balance', () => {
     expect(Object.fromEntries(enemies.map(({ id, hp }) => [id, hp]))).toEqual({
-      crawler: 11,
+      crawler: 10,
       crab: 33,
       brute: 55,
       wizard: 27.5,
       nailhead: 49.5,
       gravity: 41.8,
-      miniBoss: 500,
+      miniBoss: 400,
       finalBoss: 1000,
     });
   });

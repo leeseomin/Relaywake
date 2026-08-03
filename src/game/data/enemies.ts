@@ -4,7 +4,7 @@ import { EnemyDefinitionSchema, type EnemyDefinition } from './schemas';
 export const enemies = z.array(EnemyDefinitionSchema).parse([
   {
     id: 'crawler', name: 'Alien Crawler', spriteKey: 'enemy-alien', animationKey: 'enemy-alien-walk', behavior: 'melee',
-    hp: 11, damage: 2, speed: 54, xp: 1, radius: 17, attackRange: 27, attackCooldown: 0.72,
+    hp: 10, damage: 2, speed: 54, xp: 1, radius: 17, attackRange: 27, attackCooldown: 0.72,
     projectileSpeed: 0, coinChance: 0.02, boss: false, displayScale: 1,
   },
   {
@@ -34,7 +34,7 @@ export const enemies = z.array(EnemyDefinitionSchema).parse([
   },
   {
     id: 'miniBoss', name: 'Executioner', spriteKey: 'enemy-miniboss', animationKey: 'enemy-miniboss-walk', behavior: 'melee',
-    hp: 500, damage: 20, speed: 64, xp: 65, radius: 36, attackRange: 48, attackCooldown: 0.9,
+    hp: 400, damage: 20, speed: 64, xp: 65, radius: 36, attackRange: 48, attackCooldown: 0.9,
     projectileSpeed: 0, coinChance: 1, boss: true, displayScale: 1,
   },
   {
