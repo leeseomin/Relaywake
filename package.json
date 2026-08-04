@@ -11,8 +11,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:itch": "vue-tsc -b && vite build --mode itch",
     "build:e2e": "vite build --mode e2e",
     "build:bundle": "vite build",
+    "capture:itch": "npm run build:e2e && node scripts/capture-itch-assets.mjs",
+    "package:itch": "npm run build:itch && node scripts/package-itch.mjs",
     "preview": "vite preview",
     "preview:e2e": "vite preview --mode e2e",
     "typecheck": "vue-tsc -b",
@@ -23,6 +26,7 @@
     "test:e2e:run": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:production": "playwright test --config playwright.production.config.ts",
+    "verify:itch": "node scripts/verify-itch-runtime.mjs",
     "verify:production": "node scripts/verify-production-build.mjs",
     "check": "npm run typecheck && npm run test && npm run build:e2e && npm run test:e2e:run && npm run build && npm run verify:production && npm run test:production"
   },

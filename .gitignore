@@ -9,3 +9,8 @@ test-results/
 .env.*.local
 *.log
 .DS_Store
+
+# Local/generated itch.io release artifacts
+itch/relaywake-itch.zip
+itch/assets/relaywake-cover-source.png
+itch/assets/relaywake-gameplay.webp

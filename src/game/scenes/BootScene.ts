@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { animationEndFrame, animationFrameRate } from '../animationConfig';
-import { phaserAssets } from '../assets';
+import { assetPath, phaserAssets } from '../assets';
 import { consumePendingRunOptions } from '../runtimeContext';
 
 export class BootScene extends Phaser.Scene {
@@ -11,13 +11,13 @@ export class BootScene extends Phaser.Scene {
   public preload(): void {
     for (const asset of phaserAssets) {
       if ('frame' in asset) {
-        this.load.spritesheet(asset.key, asset.path, {
+        this.load.spritesheet(asset.key, assetPath(asset.key), {
           frameWidth: asset.frame.width,
           frameHeight: asset.frame.height,
           endFrame: asset.frame.count - 1,
         });
       } else {
-        this.load.image(asset.key, asset.path);
+        this.load.image(asset.key, assetPath(asset.key));
       }
     }
   }

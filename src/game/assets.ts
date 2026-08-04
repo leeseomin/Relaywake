@@ -585,14 +585,18 @@ const assetsByKey = new Map<AssetKey, ManifestAsset>(
   assetManifest.map((asset) => [asset.key, asset]),
 );
 
+function publicUrl(path: `/${string}`): string {
+  return `${import.meta.env?.BASE_URL ?? '/'}${path.slice(1)}`;
+}
+
 export function getAsset(key: AssetKey): ManifestAsset {
   const asset = assetsByKey.get(key);
   if (!asset) throw new Error(`Unknown asset key: ${key}`);
   return asset;
 }
 
-export function assetPath(key: AssetKey): `/assets/${string}` {
-  return getAsset(key).path;
+export function assetPath(key: AssetKey): string {
+  return publicUrl(getAsset(key).path);
 }
 
 export function assetDisplayScale(key: AssetKey): number {
@@ -611,7 +615,7 @@ export const phaserAssets: readonly ManifestAsset[] = assetManifest.filter((asse
 export const iconUrlByKey: Readonly<Record<string, string>> = Object.fromEntries(
   assetManifest
     .filter((asset) => hasConsumer(asset, 'ability-icon'))
-    .map((asset) => [asset.key, asset.path]),
+    .map((asset) => [asset.key, publicUrl(asset.path)]),
 );
 
 export function iconUrl(key: string): string {

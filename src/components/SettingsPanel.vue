@@ -10,6 +10,7 @@ const emit = defineEmits<{
   back: [];
 }>();
 const confirmingReset = ref(false);
+const thirdPartyLicensesUrl = `${import.meta.env.BASE_URL}THIRD_PARTY_LICENSES.txt`;
 
 function confirmReset(): void {
   emit('reset');
@@ -84,7 +85,7 @@ function confirmReset(): void {
 
     <a
       class="settings-license-link"
-      href="/THIRD_PARTY_LICENSES.txt"
+      :href="thirdPartyLicensesUrl"
       target="_blank"
       rel="noopener noreferrer"
     >{{ t(props.settings.locale, 'thirdPartyLicenses') }} ↗</a>

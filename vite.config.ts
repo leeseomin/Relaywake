@@ -4,9 +4,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(({ mode }) => {
   const e2eBuild = mode === 'e2e';
+  const itchBuild = mode === 'itch';
 
   return {
-    base: '/',
+    base: itchBuild ? './' : '/',
     plugins: [vue()],
     define: {
       __E2E__: JSON.stringify(e2eBuild),
