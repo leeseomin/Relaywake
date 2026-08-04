@@ -12,5 +12,6 @@ test-results/
 
 # Local/generated itch.io release artifacts
 itch/relaywake-itch.zip
+itch/relaywake-itch/
 itch/assets/relaywake-cover-source.png
 itch/assets/relaywake-gameplay.webp

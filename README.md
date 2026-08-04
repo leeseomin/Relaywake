@@ -4,6 +4,8 @@
 
 ### [🎮 Play RELAYWAKE Online →](https://relaywake.pages.dev/)
 
+### [🕹️ Play RELAYWAKE on itch.io →](https://leeseomin.itch.io/relaywake)
+
 ![RELAYWAKE gameplay](webp/5s.webp)
 
 <br>
